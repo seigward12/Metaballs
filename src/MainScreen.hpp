@@ -4,9 +4,10 @@
 #include <vector>
 
 #include "Button.hpp"
-#include "Game.hpp"
 #include "Particle.hpp"
 #include "QuadTree.hpp"
+#include "State.hpp"
+#include "StateManager.hpp"
 #include "TextBox.hpp"
 
 const sf::Color defaultColor = sf::Color(0, 255, 0, 255);
@@ -14,16 +15,16 @@ const sf::Color collisionColor = sf::Color(255, 0, 0, 255);
 const sf::Color mouseRectColor = sf::Color::Magenta;
 const sf::Color quadTreeColor = sf::Color::White;
 
-class MainScreen : public GameState {
+class MainScreen : public State {
    public:
-    explicit MainScreen(Game* game);
+    explicit MainScreen(StateManager* stateManager);
 
-    void handleInput() override;
-    void update(float dt) override;
-    void draw() override;
+    void processEvents(const sf::Event& event) override;
+    void update(const sf::Time& dt) override;
+    virtual void draw(sf::RenderTarget& target,
+                      sf::RenderStates states) const override;
 
    private:
-    Game* game;
     bool showQuadTree = false;
     bool showMouseRect = false;
     float particleSpeed = 100.f;

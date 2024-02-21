@@ -8,11 +8,10 @@ extern float particleSpeed;
 
 static sf::Vector2f button5Position;
 
-MainScreen::MainScreen(Game* game) {
-    this->game = game;
-
+MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     pause = brushMode = pressed = false;
-    boundary = sf::FloatRect(10, 10, game->width * 0.75, game->height - 20);
+    boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
+                             stateManager->height - 20);
 
     treeNodeCapacity = 4, objectNum = 800, radius = 2.0;
 
@@ -24,7 +23,8 @@ MainScreen::MainScreen(Game* game) {
 
     initializeObjects();
 
-    mouseRect.setSize(sf::Vector2f(game->height / 3.f, game->height / 3.f));
+    mouseRect.setSize(
+        sf::Vector2f(stateManager->height / 3.f, stateManager->height / 3.f));
     mouseRect.setFillColor(sf::Color::Transparent);
     mouseRect.setOutlineThickness(2);
     mouseRect.setOutlineColor(mouseRectColor);
@@ -141,20 +141,20 @@ MainScreen::MainScreen(Game* game) {
 }
 
 void MainScreen::init() {
-    float marginRight = game->width / 100;
+    float marginRight = stateManager->width / 100;
 
     if (marginRight < 10)
         marginRight = 10;
     else if (marginRight > 20)
         marginRight = 20;
 
-    float characterSize = game->width / 30;
+    float characterSize = stateManager->width / 30;
     if (characterSize < 25)
         characterSize = 25;
     else if (characterSize > 50)
         characterSize = 50;
 
-    float textBoxWidth = game->width / 10;
+    float textBoxWidth = stateManager->width / 10;
     if (textBoxWidth < 50)
         textBoxWidth = 50;
     else if (textBoxWidth > 100)
@@ -164,15 +164,15 @@ void MainScreen::init() {
         textboxes[i].setTextFormat(sf::Color::White, characterSize);
         textboxes[i].setSize(sf::Vector2f(textBoxWidth, characterSize));
         textboxes[i].setPosition(
-            sf::Vector2f(game->width - textBoxWidth - marginRight,
-                         game->height * 0.075 * i));
+            sf::Vector2f(stateManager->width - textBoxWidth - marginRight,
+                         stateManager->height * 0.075 * i));
 
         labels[i].setCharacterSize(characterSize);
         labels[i].setFillColor(sf::Color::White);
         labels[i].setPosition(
             sf::Vector2f(textboxes[i].getGlobalBounds().left -
                              labels[i].getGlobalBounds().width,
-                         game->height * 0.075 * i));
+                         stateManager->height * 0.075 * i));
     }
 
     textboxes[0].setString(std::to_string(objectNum));
@@ -189,16 +189,19 @@ void MainScreen::init() {
 
     fpsLabel.setCharacterSize(characterSize);
     fpsLabel.setFillColor(sf::Color::White);
-    fpsLabel.setPosition(0.025f * game->width, 0.025f * game->height);
+    fpsLabel.setPosition(0.025f * stateManager->width,
+                         0.025f * stateManager->height);
 
     for (int i = 0; i < buttons.size(); i++) {
         buttons[i].setBorder(sf::Color(100, 100, 100, 100), 2);
         buttons[i].setFont(*font);
         buttons[i].setCharacterSize(characterSize);
         buttons[i].setTextColor(sf::Color::White);
-        buttons[i].setPosition(sf::Vector2f(
-            game->width - marginRight - buttons[i].getGlobalBounds().width / 2,
-            game->height * 0.35 + (game->height * 0.1 * i + 1)));
+        buttons[i].setPosition(
+            sf::Vector2f(stateManager->width - marginRight -
+                             buttons[i].getGlobalBounds().width / 2,
+                         stateManager->height * 0.35 +
+                             (stateManager->height * 0.1 * i + 1)));
     }
 
     button5Position = buttons[5].getPosition();
@@ -211,58 +214,54 @@ void MainScreen::init() {
     buttons[5].setString("Brush Mode");
 }
 
-void MainScreen::handleInput() {
-    sf::Event event;
+void MainScreen::processEvents(const sf::Event& event) {
+    for (auto& textbox : textboxes)
+        textbox.handleInput(event);
 
-    while (game->window->pollEvent(event)) {
-        for (auto& textbox : textboxes)
-            textbox.handleInput(event);
+    for (auto& button : buttons)
+        button.handleInput(event);
 
-        for (auto& button : buttons)
-            button.handleInput(event);
+    if (event.type == sf::Event::Closed)
+        stateManager->window->close();
 
-        if (event.type == sf::Event::Closed)
-            game->window->close();
+    else if (event.type == sf::Event::MouseButtonPressed) {
+        if (event.mouseButton.button == sf::Mouse::Left)
+            pressed = true;
+    } else if (event.type == sf::Event::MouseButtonReleased) {
+        if (event.mouseButton.button == sf::Mouse::Left)
+            pressed = false;
+    } else if (event.type == sf::Event::KeyPressed) {
+        switch (event.key.code) {  // Clangd is not happy that you are not
+                                   // switching all cases lmao
+            case sf::Keyboard::Space:
+                pause = !pause;
+                break;
 
-        else if (event.type == sf::Event::MouseButtonPressed) {
-            if (event.mouseButton.button == sf::Mouse::Left)
-                pressed = true;
-        } else if (event.type == sf::Event::MouseButtonReleased) {
-            if (event.mouseButton.button == sf::Mouse::Left)
-                pressed = false;
-        } else if (event.type == sf::Event::KeyPressed) {
-            switch (event.key.code) {  // Clangd is not happy that you are not
-                                       // switching all cases lmao
-                case sf::Keyboard::Space:
-                    pause = !pause;
-                    break;
+            case sf::Keyboard::M:
+                showMouseRect = !showMouseRect;
+                break;
 
-                case sf::Keyboard::M:
-                    showMouseRect = !showMouseRect;
-                    break;
-
-                case sf::Keyboard::Return:
-                    buttons[0].getOnAction()();
-                    break;
-            }
-        } else if (event.type == sf::Event::Resized) {
-            resize(event);
-            return;
+            case sf::Keyboard::Return:
+                buttons[0].getOnAction()();
+                break;
         }
+    } else if (event.type == sf::Event::Resized) {
+        resize(event);
+        return;
     }
 }
 
-void MainScreen::update(const float dt) {
+void MainScreen::update(const sf::Time& dt) {
     if (fpsTimer.getElapsedTime().asSeconds() >= 1) {
         fpsTimer.restart();
         fpsLabel.setString("FPS: " + std::to_string((int)(1 / dt)));
     }
 
     for (auto& button : buttons)
-        button.update(game->window);
+        button.update(stateManager->window);
 
     for (auto& textboxe : textboxes)
-        textboxe.update(game->window);
+        textboxe.update(stateManager->window);
 
     // reconstructing the tree every frame
     quadTree.reset();
@@ -296,8 +295,9 @@ void MainScreen::update(const float dt) {
     }
 
     if (showMouseRect) {
-        mouseRect.setPosition(sf::Mouse::getPosition(*(game->window)).x,
-                              sf::Mouse::getPosition(*(game->window)).y);
+        mouseRect.setPosition(
+            sf::Mouse::getPosition(*(stateManager->window)).x,
+            sf::Mouse::getPosition(*(stateManager->window)).y);
 
         // query the quadtree for the mouseRect's global bounds
         quadTree.query(mouseRect.getGlobalBounds(), myCollisions);
@@ -312,25 +312,25 @@ void MainScreen::update(const float dt) {
         moveObjects(dt);
 }
 
-void MainScreen::draw() {
+void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     if (showQuadTree)
-        quadTree.draw(game->window);
+        quadTree.draw(target);
 
     for (auto& myObject : myObjects)
-        myObject.render(game->window);
+        myObject.render(stateManager->window);
 
     if (showMouseRect)
-        game->window->draw(mouseRect);
+        stateManager->window->draw(mouseRect);
 
-    game->window->draw(fpsLabel);
+    stateManager->window->draw(fpsLabel);
 
     for (int i = 0; i < textboxes.size(); i++) {
-        game->window->draw(labels[i]);
-        textboxes[i].draw(game->window);
+        stateManager->window->draw(labels[i]);
+        textboxes[i].draw(stateManager->window);
     }
 
     for (const auto& button : buttons)
-        button.render(game->window);
+        button.render(stateManager->window);
 }
 
 void MainScreen::moveObjects(const float dt) {
@@ -354,20 +354,20 @@ void MainScreen::initializeObjects() {
 }
 
 void MainScreen::brush() {
-    if (sf::Mouse::getPosition(*(game->window)).x >
+    if (sf::Mouse::getPosition(*(stateManager->window)).x >
             boundary.left + boundary.width ||
-        sf::Mouse::getPosition(*(game->window)).x < boundary.left ||
-        sf::Mouse::getPosition(*(game->window)).y >
+        sf::Mouse::getPosition(*(stateManager->window)).x < boundary.left ||
+        sf::Mouse::getPosition(*(stateManager->window)).y >
             boundary.top + boundary.height ||
-        sf::Mouse::getPosition(*(game->window)).y < boundary.top)
+        sf::Mouse::getPosition(*(stateManager->window)).y < boundary.top)
 
         return;
 
     Particle particle(radius);
 
     particle.setPosition(
-        sf::Vector2f(sf::Mouse::getPosition(*(game->window)).x,
-                     sf::Mouse::getPosition(*(game->window)).y));
+        sf::Vector2f(sf::Mouse::getPosition(*(stateManager->window)).x,
+                     sf::Mouse::getPosition(*(stateManager->window)).y));
     particle.setVelocity(sf::Vector2f(
         (rand() % static_cast<int>(particleSpeed) - (particleSpeed) / 2),
         (rand() % static_cast<int>(particleSpeed) - (particleSpeed) / 2)));
@@ -379,11 +379,12 @@ void MainScreen::brush() {
 void MainScreen::resize(const sf::Event& event) {
     const sf::FloatRect visibleArea =
         sf::FloatRect(0, 0, event.size.width, event.size.height);
-    game->window->setView(sf::View(visibleArea));
+    stateManager->window->setView(sf::View(visibleArea));
 
-    game->width = event.size.width;
-    game->height = event.size.height;
-    boundary = sf::FloatRect(10, 10, game->width * 0.75, game->height - 20);
+    stateManager->width = event.size.width;
+    stateManager->height = event.size.height;
+    boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
+                             stateManager->height - 20);
     quadTree.setData(boundary, treeNodeCapacity);
 
     for (auto& myObject : myObjects) {
