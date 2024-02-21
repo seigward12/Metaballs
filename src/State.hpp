@@ -10,5 +10,5 @@ class State : public sf::Drawable {
    public:
     State(StateManager* stateManager) : stateManager{stateManager} {};
     virtual void processEvents(const sf::Event& event) = 0;
-    void update(const sf::Time& dt) = 0;
+    virtual void update(const sf::Time& dt) = 0;
 };
