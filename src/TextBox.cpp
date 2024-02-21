@@ -2,18 +2,14 @@
 
 TextBox::TextBox(const sf::Font& font) {
     text.setFont(font);
-    this->font = font;
     text.setCharacterSize(30);
     text.setFillColor(sf::Color::White);
+
     border.setFillColor(sf::Color::Transparent);
     border.setOutlineThickness(2);
     border.setSize(sf::Vector2f(100, text.getCharacterSize()));
+    border.setOutlineColor(BORDER_COLOR);
 
-    borderColor = sf::Color::White;
-    borderHoverColor = sf::Color::Green;
-    borderSelectedColor = sf::Color::Red;
-
-    border.setOutlineColor(borderColor);
     selected = hover = validTextEntered = false;
     textLimit = 15;
     subsetCounter = 0;
@@ -116,18 +112,18 @@ void TextBox::update(const sf::RenderWindow* window) {
     }
 
     if (selected)
-        border.setOutlineColor(borderSelectedColor);
+        border.setOutlineColor(BORDER_COLOR_SELECTED);
 
     if (isMouseOver(window)) {
         hover = true;
         if (!selected)
-            border.setOutlineColor(borderHoverColor);
+            border.setOutlineColor(BORDER_COLOR_HOVER);
         return;
     }
 
     hover = false;
     if (!selected)
-        border.setOutlineColor(borderColor);
+        border.setOutlineColor(BORDER_COLOR);
 }
 
 void TextBox::draw(sf::RenderWindow(*window)) const {
@@ -151,17 +147,6 @@ void TextBox::setOrigin(const sf::Vector2f origin) {
     this->origin = origin;
     border.setOrigin(origin);
     text.setOrigin(origin);
-}
-
-void TextBox::setBorder(const float thickness,
-                        const sf::Color color,
-                        const sf::Color hoverColor,
-                        const sf::Color selectedColor) {
-    border.setOutlineColor(color);
-    borderColor = color;
-    borderHoverColor = hoverColor;
-    borderSelectedColor = selectedColor;
-    border.setOutlineThickness(thickness);
 }
 
 void TextBox::setString(const std::string& str) {
@@ -238,7 +223,8 @@ bool TextBox::isMouseOver(const sf::RenderWindow* window) const {
 
 float TextBox::getCharacterWidth() const {
     char c = 'A';
-    const sf::Glyph glyph = font.getGlyph(c, getCharacterSize(), false);
+    const sf::Glyph glyph =
+        text.getFont()->getGlyph(c, getCharacterSize(), false);
 
     return glyph.advance;
 }

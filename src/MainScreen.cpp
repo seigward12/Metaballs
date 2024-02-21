@@ -35,8 +35,6 @@ MainScreen::MainScreen(Game* game) {
 
     for (int i = 0; i < 4; i++) {
         textboxes.emplace_back(*font);
-        textboxes[i].setBorder(2, sf::Color::White, sf::Color::Black,
-                               sf::Color::White);
         textboxes[i].allowNumberOnly();
         textboxes[i].setBackgroundColor(sf::Color(100, 100, 100, 100));
 

@@ -1,6 +1,10 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
+const sf::Color BORDER_COLOR = sf::Color::White;
+const sf::Color BORDER_COLOR_HOVER = sf::Color::Green;
+const sf::Color BORDER_COLOR_SELECTED = sf::Color::Red;
+
 class TextBox {
    public:
     explicit TextBox(const sf::Font& font);
@@ -16,11 +20,6 @@ class TextBox {
     void setPosition(sf::Vector2f position);
 
     void setOrigin(sf::Vector2f origin);
-
-    void setBorder(float thickness,
-                   sf::Color color,
-                   sf::Color hoverColor,
-                   sf::Color selectedColor);
 
     void setTextFormat(sf::Color color, float size);
     void setTextColor(sf::Color color);
@@ -57,7 +56,6 @@ class TextBox {
    private:
     sf::RectangleShape border;
     sf::Text text;
-    sf::Font font;
 
     sf::Vector2f position;
     sf::Vector2f origin;
@@ -67,8 +65,6 @@ class TextBox {
     bool selected, hover, validTextEntered;
 
     std::string inputString;
-
-    sf::Color borderColor, borderHoverColor, borderSelectedColor;
 
     float typeAllowed{};
 
