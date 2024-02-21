@@ -1,0 +1,57 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# VS Code specific files
+.vscode/
+.settings.json
+
+# SFML specific files
+/bin/
+/build/
+/Debug/
+/Release/
+
+# Dependency folders
+/lib/
+
+# macOS specific files
+.DS_Store
+
+# Compiled Python files
+__pycache__/
+*.pyc
+
+# Other unwanted files
+Thumbs.db
+desktop.ini
+
+# User-specific files
+*.sublime-workspace
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.lock
