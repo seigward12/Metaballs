@@ -20,7 +20,6 @@ class Game {
     sf::RenderWindow* window;
 
     float width, height;
-    float height_;
 
    private:
     std::vector<GameState*> states;

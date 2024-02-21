@@ -3,10 +3,7 @@
 #include "Game.hpp"
 #include "GameState.hpp"
 
-Game::Game(const float width, float height) : height_(height) {
-    this->width = width;
-    this->height = height;
-
+Game::Game(const float width, float height) : height(height), width(width) {
     window = new sf::RenderWindow(sf::VideoMode(width, height),
                                   "QuadTree Visualization");
     window->setFramerateLimit(60);

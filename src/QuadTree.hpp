@@ -68,52 +68,37 @@ class QuadTree {
         }
     };
 
-    typedef Node* NodePtr;
+    Node* root;
 
-    NodePtr root;
-
-    // helper functions for the public recursive functions
-
-    void insert_helper(DataType* object, NodePtr node);
+    void insert_helper(DataType* object, Node* node);
 
     void query_helper(sf::FloatRect range,
                       std::vector<DataType*>& objectsFound,
-                      NodePtr node);
+                      Node* node);
 
-    bool search_helper(DataType* object, NodePtr node);
+    bool search_helper(DataType* object, Node* node);
 
-    void reset_helper(NodePtr node);
+    void reset_helper(Node* node);
 
-    void draw_helper(sf::RenderWindow* window, NodePtr node);
+    void draw_helper(sf::RenderWindow* window, Node* node);
 
    public:
-    // No Argument Constructor
     QuadTree();
-
-    // Destructor
-    ~QuadTree();
-
-    // Constructor
     QuadTree(sf::FloatRect boundary, ushort capacity);
+    ~QuadTree();
 
     void setData(sf::FloatRect boundary, ushort capacity);
 
-    // Resets the QuadTree (Removes all objects & deletes all nodes)
     void reset();
 
-    // Inserts an object into the QuadTree
     void insert(DataType* object);
 
-    // Returns all objects that are within a given range
     void query(sf::FloatRect range, std::vector<DataType*>& objectsFound);
 
-    // Returns true if the object is in the tree
     bool search(DataType* object);
 
-    // Returns true if the two objects are equal
     bool equals(DataType* A, DataType* B);
 
-    // Draws the QuadTree borders on an sf::RenderWindow
     void draw(sf::RenderWindow* window);
 };
 
@@ -143,7 +128,7 @@ void QuadTree<DataType>::reset() {
 }
 
 template <class DataType>
-void QuadTree<DataType>::reset_helper(NodePtr node) {
+void QuadTree<DataType>::reset_helper(Node* node) {
     if (node->divided) {
         reset_helper(node->NE);
         reset_helper(node->NW);
@@ -166,7 +151,7 @@ void QuadTree<DataType>::insert(DataType* object) {
 }
 
 template <class DataType>
-void QuadTree<DataType>::insert_helper(DataType* object, NodePtr node) {
+void QuadTree<DataType>::insert_helper(DataType* object, Node* node) {
     //// the search function considerably slows down the Quad Tree
     //// as it recursively checks the whole quad tree for the object
     //// everytime insert is called, so it is better to not use it
@@ -203,7 +188,7 @@ void QuadTree<DataType>::query(sf::FloatRect range,
 template <class DataType>
 void QuadTree<DataType>::query_helper(sf::FloatRect range,
                                       std::vector<DataType*>& objectsFound,
-                                      NodePtr node) {
+                                      Node* node) {
     if (!node->boundary.intersects(range))
         return;
     else {
@@ -239,7 +224,7 @@ bool QuadTree<DataType>::search(DataType* object) {
 }
 
 template <class DataType>
-bool QuadTree<DataType>::search_helper(DataType* object, NodePtr node) {
+bool QuadTree<DataType>::search_helper(DataType* object, Node* node) {
     for (ushort i = 0; i < node->objects.size(); i++) {
         if (equals(object, node->objects[i]))
             return true;
@@ -263,7 +248,7 @@ void QuadTree<DataType>::draw(sf::RenderWindow* window) {
 }
 
 template <class DataType>
-void QuadTree<DataType>::draw_helper(sf::RenderWindow* window, NodePtr node) {
+void QuadTree<DataType>::draw_helper(sf::RenderWindow* window, Node* node) {
     node->draw(window);
 
     if (node->divided) {
