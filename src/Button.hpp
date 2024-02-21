@@ -3,14 +3,14 @@
 #include <functional>
 #include <string>
 
-class Button {
+class Button : public sf::Drawable {
    public:
     Button();
     explicit Button(const sf::Font& font);
 
     void handleInput(sf::Event event);
     void update(const sf::RenderWindow* window);
-    void render(sf::RenderWindow* window) const;
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void setOrigin(sf::Vector2f origin);
     void setPosition(sf::Vector2f position);

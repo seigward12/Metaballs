@@ -4,7 +4,7 @@
 
 typedef unsigned short ushort;
 template <class DataType>
-class QuadTree {
+class QuadTree : public sf::Drawable {
    private:
     class Node {
        public:
@@ -99,7 +99,7 @@ class QuadTree {
 
     bool equals(DataType* A, DataType* B);
 
-    void draw(sf::RenderWindow* window);
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 
 template <class DataType>
@@ -243,8 +243,9 @@ bool QuadTree<DataType>::search_helper(DataType* object, Node* node) {
 }
 
 template <class DataType>
-void QuadTree<DataType>::draw(sf::RenderWindow* window) {
-    draw_helper(window, root);
+void QuadTree<DataType>::draw(sf::RenderTarget& target,
+                              sf::RenderStates states) const {
+    draw_helper(target, root);
 }
 
 template <class DataType>

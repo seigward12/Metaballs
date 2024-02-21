@@ -21,8 +21,7 @@ class MainScreen : public State {
 
     void processEvents(const sf::Event& event) override;
     void update(const sf::Time& dt) override;
-    virtual void draw(sf::RenderTarget& target,
-                      sf::RenderStates states) const override;
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
    private:
     bool showQuadTree = false;

@@ -1,13 +1,13 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
-class Particle {
+class Particle : public sf::Drawable {
    public:
     explicit Particle(float radius);
 
     void update(float dt, sf::FloatRect boundary);
 
-    void render(sf::RenderWindow* window) const;
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void setPosition(sf::Vector2f position);
 

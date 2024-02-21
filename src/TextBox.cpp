@@ -126,9 +126,9 @@ void TextBox::update(const sf::RenderWindow* window) {
         border.setOutlineColor(BORDER_COLOR);
 }
 
-void TextBox::draw(sf::RenderWindow(*window)) const {
-    window->draw(border);
-    window->draw(text);
+void TextBox::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    target.draw(border);
+    target.draw(text);
 }
 
 void TextBox::setSize(const sf::Vector2f size) {

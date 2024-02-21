@@ -314,23 +314,23 @@ void MainScreen::update(const sf::Time& dt) {
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     if (showQuadTree)
-        quadTree.draw(target);
+        target.draw(quadTree);
 
     for (auto& myObject : myObjects)
-        myObject.render(stateManager->window);
+        target.draw(myObject);
 
     if (showMouseRect)
-        stateManager->window->draw(mouseRect);
+        target.draw(mouseRect);
 
-    stateManager->window->draw(fpsLabel);
+    target.draw(fpsLabel);
 
     for (int i = 0; i < textboxes.size(); i++) {
-        stateManager->window->draw(labels[i]);
-        textboxes[i].draw(stateManager->window);
+        target.draw(labels[i]);
+        target.draw(textboxes[i]);
     }
 
     for (const auto& button : buttons)
-        button.render(stateManager->window);
+        target.draw(button);
 }
 
 void MainScreen::moveObjects(const float dt) {

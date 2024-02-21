@@ -31,8 +31,8 @@ void Particle::update(const float dt, const sf::FloatRect boundary) {
     shape.move(velocity * dt);
 }
 
-void Particle::render(sf::RenderWindow* window) const {
-    window->draw(shape);
+void Particle::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    target.draw(shape);
 }
 
 void Particle::setPosition(const sf::Vector2f position) {

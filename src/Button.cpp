@@ -136,14 +136,14 @@ void Button::update(const sf::RenderWindow* window) {
     }
 }
 
-void Button::render(sf::RenderWindow* window) const {
-    window->draw(border);
-    window->draw(text);
+void Button::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    target.draw(border);
+    target.draw(text);
 
     if (disabled) {
         sf::RectangleShape disabledShade(border);
         disabledShade.setFillColor(sf::Color(0, 0, 0, 150));
-        window->draw(disabledShade);
+        target.draw(disabledShade);
     }
 }
 

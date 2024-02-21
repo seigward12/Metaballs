@@ -5,7 +5,7 @@ const sf::Color BORDER_COLOR = sf::Color::White;
 const sf::Color BORDER_COLOR_HOVER = sf::Color::Green;
 const sf::Color BORDER_COLOR_SELECTED = sf::Color::Red;
 
-class TextBox {
+class TextBox : public sf::Drawable {
    public:
     explicit TextBox(const sf::Font& font);
 
@@ -13,12 +13,10 @@ class TextBox {
 
     void update(const sf::RenderWindow* window);
 
-    void draw(sf::RenderWindow* window) const;
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void setSize(sf::Vector2f size);
-
     void setPosition(sf::Vector2f position);
-
     void setOrigin(sf::Vector2f origin);
 
     void setTextFormat(sf::Color color, float size);
