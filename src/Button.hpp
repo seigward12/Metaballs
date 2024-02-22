@@ -8,7 +8,7 @@ class Button : public sf::Drawable {
     Button();
     explicit Button(const sf::Font& font);
 
-    void handleInput(sf::Event event);
+    void processEvent(sf::Event event);
     void update(const sf::RenderWindow* window);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

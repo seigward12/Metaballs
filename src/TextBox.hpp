@@ -9,7 +9,7 @@ class TextBox : public sf::Drawable {
    public:
     explicit TextBox(const sf::Font& font);
 
-    void handleInput(const sf::Event& event);
+    void processEvent(const sf::Event& event);
 
     void update(const sf::RenderWindow* window);
 

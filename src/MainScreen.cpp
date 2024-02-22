@@ -214,17 +214,14 @@ void MainScreen::init() {
     buttons[5].setString("Brush Mode");
 }
 
-void MainScreen::processEvents(const sf::Event& event) {
+void MainScreen::processEvent(const sf::Event& event) {
     for (auto& textbox : textboxes)
-        textbox.handleInput(event);
+        textbox.processEvent(event);
 
     for (auto& button : buttons)
-        button.handleInput(event);
+        button.processEvent(event);
 
-    if (event.type == sf::Event::Closed)
-        stateManager->window->close();
-
-    else if (event.type == sf::Event::MouseButtonPressed) {
+    if (event.type == sf::Event::MouseButtonPressed) {
         if (event.mouseButton.button == sf::Mouse::Left)
             pressed = true;
     } else if (event.type == sf::Event::MouseButtonReleased) {
@@ -254,7 +251,7 @@ void MainScreen::processEvents(const sf::Event& event) {
 void MainScreen::update(const sf::Time& dt) {
     if (fpsTimer.getElapsedTime().asSeconds() >= 1) {
         fpsTimer.restart();
-        fpsLabel.setString("FPS: " + std::to_string((int)(1 / dt)));
+        fpsLabel.setString("FPS: " + std::to_string((int)(1 / dt.asSeconds())));
     }
 
     for (auto& button : buttons)
@@ -298,6 +295,7 @@ void MainScreen::update(const sf::Time& dt) {
         mouseRect.setPosition(
             sf::Mouse::getPosition(*(stateManager->window)).x,
             sf::Mouse::getPosition(*(stateManager->window)).y);
+        mouseRect.setPosition(sf::Mouse::getPosition());
 
         // query the quadtree for the mouseRect's global bounds
         quadTree.query(mouseRect.getGlobalBounds(), myCollisions);

@@ -62,7 +62,7 @@ void StateManager::run() {
 void StateManager::processEvents() {
     sf::Event event;
     while (window.pollEvent(event)) {
-        state->processEvents(event);
+        state->processEvent(event);
         if (event.type == sf::Event::Closed)
             window.close();
         applyChanges();

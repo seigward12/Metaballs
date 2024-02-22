@@ -85,7 +85,7 @@ std::function<void()> Button::getOnAction() const {
     return onAction;
 }
 
-void Button::handleInput(sf::Event event) {
+void Button::processEvent(sf::Event event) {
     if (disabled)
         return;
 

@@ -16,7 +16,7 @@ TextBox::TextBox(const sf::Font& font) {
     maxCharactersDisplayed = 99999;
 }
 
-void TextBox::handleInput(const sf::Event& event) {
+void TextBox::processEvent(const sf::Event& event) {
     if (event.type == sf::Event::MouseButtonPressed) {
         switch (event.mouseButton.button) {
             case sf::Mouse::Left:

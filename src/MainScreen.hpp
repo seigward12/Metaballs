@@ -19,7 +19,7 @@ class MainScreen : public State {
    public:
     explicit MainScreen(StateManager* stateManager);
 
-    void processEvents(const sf::Event& event) override;
+    void processEvent(const sf::Event& event) override;
     void update(const sf::Time& dt) override;
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
