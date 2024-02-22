@@ -221,30 +221,46 @@ void MainScreen::processEvent(const sf::Event& event) {
     for (auto& button : buttons)
         button.processEvent(event);
 
-    if (event.type == sf::Event::MouseButtonPressed) {
-        if (event.mouseButton.button == sf::Mouse::Left)
-            pressed = true;
-    } else if (event.type == sf::Event::MouseButtonReleased) {
-        if (event.mouseButton.button == sf::Mouse::Left)
-            pressed = false;
-    } else if (event.type == sf::Event::KeyPressed) {
-        switch (event.key.code) {  // Clangd is not happy that you are not
-                                   // switching all cases lmao
-            case sf::Keyboard::Space:
-                pause = !pause;
-                break;
+    switch (event.type) {
+        case sf::Event::MouseButtonPressed:
+            if (event.mouseButton.button == sf::Mouse::Left)
+                pressed = true;
+            break;
 
-            case sf::Keyboard::M:
-                showMouseRect = !showMouseRect;
-                break;
+        case sf::Event::MouseButtonReleased:
+            if (event.mouseButton.button == sf::Mouse::Left)
+                pressed = false;
+            break;
 
-            case sf::Keyboard::Return:
-                buttons[0].getOnAction()();
-                break;
-        }
-    } else if (event.type == sf::Event::Resized) {
-        resize(event);
-        return;
+        case sf::Event::KeyPressed:
+            switch (event.key.code) {
+                case sf::Keyboard::Space:
+                    pause = !pause;
+                    break;
+
+                case sf::Keyboard::M:
+                    showMouseRect = !showMouseRect;
+                    break;
+
+                case sf::Keyboard::Return:
+                    buttons[0].getOnAction()();
+                    break;
+
+                default:
+                    break;
+            }
+            break;
+
+        case sf::Event::Resized:
+            resize(event);
+            break;
+
+        case sf::Event::MouseMoved:
+            mouseRect.setPosition(event.mouseMove.x, event.mouseMove.y);
+            break;
+
+        default:
+            break;
     }
 }
 
@@ -292,11 +308,6 @@ void MainScreen::update(const sf::Time& dt) {
     }
 
     if (showMouseRect) {
-        mouseRect.setPosition(
-            sf::Mouse::getPosition(*(stateManager->window)).x,
-            sf::Mouse::getPosition(*(stateManager->window)).y);
-        mouseRect.setPosition(sf::Mouse::getPosition());
-
         // query the quadtree for the mouseRect's global bounds
         quadTree.query(mouseRect.getGlobalBounds(), myCollisions);
 

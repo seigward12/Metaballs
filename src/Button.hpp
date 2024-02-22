@@ -8,7 +8,7 @@ class Button : public sf::Drawable {
     Button();
     explicit Button(const sf::Font& font);
 
-    void processEvent(sf::Event event);
+    void processEvent(const sf::Event& event);
     void update(const sf::RenderWindow* window);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -39,8 +39,6 @@ class Button : public sf::Drawable {
    private:
     void init();
 
-    bool isMouseOver(const sf::RectangleShape& sprite,
-                     const sf::RenderWindow* window) const;
     void resize();
 
     sf::RectangleShape border;

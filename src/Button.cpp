@@ -85,39 +85,35 @@ std::function<void()> Button::getOnAction() const {
     return onAction;
 }
 
-void Button::processEvent(sf::Event event) {
+void Button::processEvent(const sf::Event& event) {
     if (disabled)
         return;
 
-    if (event.type == sf::Event::MouseButtonPressed) {
-        switch (event.mouseButton.button) {
-            case sf::Mouse::Left:
-                if (mouseOver)
-                    pressed = true;
-                break;
-            default:;
-        }
-    }
+    switch (event.type) {
+        case sf::Event::MouseMoved:
+            mouseOver = border.getGlobalBounds().contains(event.mouseMove.x,
+                                                          event.mouseMove.y);
 
-    if (event.type == sf::Event::MouseButtonReleased) {
-        switch (event.mouseButton.button) {
-            case sf::Mouse::Left:
-                if (mouseOver)
-                    onAction();
-                break;
-        }
-        pressed = false;
+        case sf::Event::MouseButtonPressed:
+            if (event.mouseButton.button == sf::Mouse::Left && mouseOver) {
+                pressed = true;
+            }
+            break;
+
+        case sf::Event::MouseButtonReleased:
+            if (event.mouseButton.button == sf::Mouse::Left && mouseOver) {
+                onAction();
+            }
+            break;
+
+        default:
+            break;
     }
 }
 
 void Button::update(const sf::RenderWindow* window) {
     if (disabled)
         return;
-
-    if (isMouseOver(border, window))
-        mouseOver = true;
-    else
-        mouseOver = false;
 
     if (mouseOver) {
         border.setOutlineColor(hoverColor);
@@ -127,7 +123,7 @@ void Button::update(const sf::RenderWindow* window) {
         border.setFillColor(backgroundColor);
     }
 
-    if (pressed) {
+    if (pressed) {  // TODO fix to not set color each update
         text.setFillColor(backgroundColor);
         border.setFillColor(textColor);
     } else {
@@ -171,10 +167,4 @@ sf::Color Button::getTextColor() const {
 
 bool Button::isMouseOver() const {
     return mouseOver;
-}
-
-bool Button::isMouseOver(const sf::RectangleShape& sprite,
-                         const sf::RenderWindow* window) const {
-    return sprite.getGlobalBounds().contains(sf::Mouse::getPosition(*window).x,
-                                             sf::Mouse::getPosition(*window).y);
 }
