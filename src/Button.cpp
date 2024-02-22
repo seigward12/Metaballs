@@ -111,7 +111,7 @@ void Button::processEvent(const sf::Event& event) {
     }
 }
 
-void Button::update(const sf::RenderWindow* window) {
+void Button::update() {
     if (disabled)
         return;
 

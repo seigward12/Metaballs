@@ -81,10 +81,13 @@ void TextBox::processEvent(const sf::Event& event) {
 
         validTextEntered = true;
         text.setString(inputString);
+    } else if (event.type == sf::Event::MouseMoved) {
+        hover =
+            getGlobalBounds().contains(event.mouseMove.x, event.mouseMove.y);
     }
 }
 
-void TextBox::update(const sf::RenderWindow* window) {
+void TextBox::update() {
     if (subsetCounter < 0)
         subsetCounter = 0;
 
@@ -114,16 +117,12 @@ void TextBox::update(const sf::RenderWindow* window) {
     if (selected)
         border.setOutlineColor(BORDER_COLOR_SELECTED);
 
-    if (isMouseOver(window)) {
-        hover = true;
+    if (hover) {
         if (!selected)
+            border.setOutlineColor(BORDER_COLOR);
+        else
             border.setOutlineColor(BORDER_COLOR_HOVER);
-        return;
     }
-
-    hover = false;
-    if (!selected)
-        border.setOutlineColor(BORDER_COLOR);
 }
 
 void TextBox::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -214,11 +213,6 @@ bool TextBox::isSelected() const {
 
 std::string TextBox::getString() const {
     return inputString;
-}
-
-bool TextBox::isMouseOver(const sf::RenderWindow* window) const {
-    return getGlobalBounds().contains(sf::Mouse::getPosition(*window).x,
-                                      sf::Mouse::getPosition(*window).y);
 }
 
 float TextBox::getCharacterWidth() const {

@@ -9,7 +9,7 @@ class Button : public sf::Drawable {
     explicit Button(const sf::Font& font);
 
     void processEvent(const sf::Event& event);
-    void update(const sf::RenderWindow* window);
+    void update();
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     void setOrigin(sf::Vector2f origin);

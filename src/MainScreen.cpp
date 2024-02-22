@@ -271,10 +271,10 @@ void MainScreen::update(const sf::Time& dt) {
     }
 
     for (auto& button : buttons)
-        button.update(stateManager->window);
+        button.update();
 
     for (auto& textboxe : textboxes)
-        textboxe.update(stateManager->window);
+        textboxe.update();
 
     // reconstructing the tree every frame
     quadTree.reset();

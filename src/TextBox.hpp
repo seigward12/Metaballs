@@ -11,7 +11,7 @@ class TextBox : public sf::Drawable {
 
     void processEvent(const sf::Event& event);
 
-    void update(const sf::RenderWindow* window);
+    void update();
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -80,7 +80,6 @@ class TextBox : public sf::Drawable {
 
     enum { NUMBER_ONLY, ALPHA_ONLY, ALPHA_NUMERIC };
 
-    bool isMouseOver(const sf::RenderWindow* window) const;
     float getCharacterWidth() const;
     int calculateMaxCharactersDisplayed();
 };
