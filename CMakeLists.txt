@@ -22,7 +22,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     sfml-network 
     sfml-system
 )
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 if(WIN32)
     add_custom_command(

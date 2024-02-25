@@ -10,8 +10,8 @@ class StateManager {
    private:
     State* state;
     State* nextState;
-    bool m_running;
     sf::RenderWindow window;
+    bool IsRunning;
     bool isFullscreen;
 
     void processEvents();
@@ -20,9 +20,11 @@ class StateManager {
 
    public:
     StateManager(float width, float height);
-    ~StateManager();
+    ~StateManager() = default;
 
     void changeState(State* state);
+    const sf::RenderWindow& getWindow() const { return window; };
+    void setView(const sf::View& view) { window.setView(view); };
 
     State* getCurrentState();
     bool running();

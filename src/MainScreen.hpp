@@ -57,7 +57,7 @@ class MainScreen : public State {
 
     void initializeObjects();
 
-    void moveObjects(float dt);
+    void moveObjects(const sf::Time& dt);
 
     void brush();
 

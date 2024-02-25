@@ -137,7 +137,6 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     });
 
     init();
-    init();
 }
 
 void MainScreen::init() {
@@ -342,9 +341,7 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
         target.draw(button);
 }
 
-void MainScreen::moveObjects(const float dt) {
-    // Objects move randomly
-
+void MainScreen::moveObjects(const sf::Time& dt) {
     for (auto& myObject : myObjects)
         myObject.update(dt, boundary);
 }
@@ -363,20 +360,17 @@ void MainScreen::initializeObjects() {
 }
 
 void MainScreen::brush() {
-    if (sf::Mouse::getPosition(*(stateManager->window)).x >
-            boundary.left + boundary.width ||
-        sf::Mouse::getPosition(*(stateManager->window)).x < boundary.left ||
-        sf::Mouse::getPosition(*(stateManager->window)).y >
-            boundary.top + boundary.height ||
-        sf::Mouse::getPosition(*(stateManager->window)).y < boundary.top)
+    int xPos = sf::Mouse::getPosition(stateManager->getWindow()).x;
+    int yPos = sf::Mouse::getPosition(stateManager->getWindow()).y;
+
+    if (xPos > boundary.left + boundary.width || xPos < boundary.left ||
+        yPos > boundary.top + boundary.height || yPos < boundary.top)
 
         return;
 
     Particle particle(radius);
 
-    particle.setPosition(
-        sf::Vector2f(sf::Mouse::getPosition(*(stateManager->window)).x,
-                     sf::Mouse::getPosition(*(stateManager->window)).y));
+    particle.setPosition(sf::Vector2f(xPos, yPos));
     particle.setVelocity(sf::Vector2f(
         (rand() % static_cast<int>(particleSpeed) - (particleSpeed) / 2),
         (rand() % static_cast<int>(particleSpeed) - (particleSpeed) / 2)));
@@ -388,7 +382,7 @@ void MainScreen::brush() {
 void MainScreen::resize(const sf::Event& event) {
     const sf::FloatRect visibleArea =
         sf::FloatRect(0, 0, event.size.width, event.size.height);
-    stateManager->window->setView(sf::View(visibleArea));
+    stateManager->setView(sf::View(visibleArea));
 
     stateManager->width = event.size.width;
     stateManager->height = event.size.height;

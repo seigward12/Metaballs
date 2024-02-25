@@ -5,7 +5,7 @@ class Particle : public sf::Drawable {
    public:
     explicit Particle(float radius);
 
-    void update(float dt, sf::FloatRect boundary);
+    void update(const sf::Time& dt, sf::FloatRect boundary);
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

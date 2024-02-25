@@ -3,7 +3,7 @@
 #include "StateManager.hpp"
 
 StateManager::StateManager(float width, float height)
-    : m_running{true},
+    : IsRunning{true},
       window(sf::VideoMode(width, height), "Diamant", sf::Style::Default),
       state{nullptr},
       width{width},
@@ -24,11 +24,11 @@ void StateManager::changeState(State* state) {
 }
 
 bool StateManager::running() {
-    return m_running;
+    return IsRunning;
 }
 
 void StateManager::quit() {
-    m_running = false;
+    IsRunning = false;
 }
 
 State* StateManager::getCurrentState() {

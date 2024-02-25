@@ -7,7 +7,7 @@ Particle::Particle(const float radius) {
     velocity = sf::Vector2f(0, 0);
 }
 
-void Particle::update(const float dt, const sf::FloatRect boundary) {
+void Particle::update(const sf::Time& dt, const sf::FloatRect boundary) {
     if (shape.getPosition().x - shape.getRadius() < boundary.left ||
         shape.getPosition().x + shape.getRadius() >
             boundary.left + boundary.width)
@@ -28,7 +28,7 @@ void Particle::update(const float dt, const sf::FloatRect boundary) {
         shape.getPosition().y + shape.getRadius() < boundary.top)
         velocity.y *= -1;
 
-    shape.move(velocity * dt);
+    shape.move(velocity * dt.asSeconds());  // TODO verifier si secondes est bon
 }
 
 void Particle::draw(sf::RenderTarget& target, sf::RenderStates states) const {
