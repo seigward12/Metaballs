@@ -33,9 +33,19 @@ if(WIN32)
 endif()
 
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-file(COPY src/assets DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
+# if(NOT CMAKE_BUILD_TYPE)
+#   set(CMAKE_BUILD_TYPE Release)
+# endif()
+# file(COPY src/assets DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
+
+add_custom_command(
+        TARGET ${PROJECT_NAME}
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${PROJECT_SOURCE_DIR}/src/assets
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
+        COMMENT "Copying assets into binary directory ${PROJECT_BINARY_DIR}"
+        )
+
+# add_dependencies(${PROJECT_NAME} copy_assets)
 
 install(TARGETS ${PROJECT_NAME})
