@@ -5,6 +5,8 @@ const sf::Color BORDER_COLOR = sf::Color::White;
 const sf::Color BORDER_COLOR_HOVER = sf::Color::Green;
 const sf::Color BORDER_COLOR_SELECTED = sf::Color::Red;
 
+const enum AUTHORIZED_CHARACTERS { NUMBER_ONLY, ALPHA_ONLY, ALPHA_NUMERIC };
+
 class TextBox : public sf::Drawable {
    public:
     explicit TextBox(const sf::Font& font);
@@ -30,11 +32,7 @@ class TextBox : public sf::Drawable {
 
     void setSelected(bool selected);
 
-    void allowNumberOnly();
-
-    void allowAlphaOnly();
-
-    void allowAlphaNumeric();
+    void setAuthorizedCharacters(const AUTHORIZED_CHARACTERS type);
 
     bool isHovered() const;
 
@@ -64,7 +62,7 @@ class TextBox : public sf::Drawable {
 
     std::string inputString;
 
-    float typeAllowed{};
+    AUTHORIZED_CHARACTERS typeAllowed = ALPHA_NUMERIC;
 
     enum {
         BACKSPACE = 8,
@@ -77,8 +75,6 @@ class TextBox : public sf::Drawable {
         A_CAPS = 97,
         Z_CAPS = 122
     };
-
-    enum { NUMBER_ONLY, ALPHA_ONLY, ALPHA_NUMERIC };
 
     float getCharacterWidth() const;
     int calculateMaxCharactersDisplayed();

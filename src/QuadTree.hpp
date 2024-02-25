@@ -56,15 +56,15 @@ class QuadTree : public sf::Drawable {
             sf::FloatRect se(sf::Vector2f((x1 + x2) / 2, (y1 + y2) / 2), size);
             sf::FloatRect sw(sf::Vector2f(x1, (y1 + y2) / 2), size);
 
-            NE = new Node(ne, capacity);  // north east
-            NW = new Node(nw, capacity);  // north west
-            SE = new Node(se, capacity);  // south east
-            SW = new Node(sw, capacity);  // south west
+            NE = new Node(ne, capacity);
+            NW = new Node(nw, capacity);
+            SE = new Node(se, capacity);
+            SW = new Node(sw, capacity);
 
             this->divided = true;
         }
-        void draw(sf::RenderWindow* window) const {
-            window->draw(this->lines, 5, sf::LineStrip);
+        void draw(sf::RenderTarget& target) const {
+            target.draw(this->lines, 5, sf::LineStrip);
         }
     };
 
@@ -80,7 +80,7 @@ class QuadTree : public sf::Drawable {
 
     void reset_helper(Node* node);
 
-    void draw_helper(sf::RenderWindow* window, Node* node);
+    void draw_helper(sf::RenderTarget& target, Node* node) const;
 
    public:
     QuadTree();
@@ -249,14 +249,15 @@ void QuadTree<DataType>::draw(sf::RenderTarget& target,
 }
 
 template <class DataType>
-void QuadTree<DataType>::draw_helper(sf::RenderWindow* window, Node* node) {
-    node->draw(window);
+void QuadTree<DataType>::draw_helper(sf::RenderTarget& target,
+                                     Node* node) const {
+    node->draw(target);
 
     if (node->divided) {
-        draw_helper(window, node->NE);
-        draw_helper(window, node->NW);
-        draw_helper(window, node->SE);
-        draw_helper(window, node->SW);
+        draw_helper(target, node->NE);
+        draw_helper(target, node->NW);
+        draw_helper(target, node->SE);
+        draw_helper(target, node->SW);
     }
 }
 

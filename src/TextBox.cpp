@@ -35,9 +35,9 @@ void TextBox::processEvent(const sf::Event& event) {
         if (!selected)
             return;
 
-        const float inputCode = event.text.unicode;
+        const sf::Uint32 inputCode = event.text.unicode;
 
-        if (inputCode == BACKSPACE && !inputString.empty()) {
+        if (inputCode == sf::Keyboard::Backspace && !inputString.empty()) {
             inputString.erase(inputString.length() - 1, inputString.length());
             validTextEntered = true;
         }
@@ -175,16 +175,8 @@ void TextBox::setSelected(const bool selected) {
     this->selected = selected;
 }
 
-void TextBox::allowAlphaOnly() {
-    typeAllowed = ALPHA_ONLY;
-}
-
-void TextBox::allowNumberOnly() {
-    typeAllowed = NUMBER_ONLY;
-}
-
-void TextBox::allowAlphaNumeric() {
-    typeAllowed = ALPHA_NUMERIC;
+void TextBox::setAuthorizedCharacters(const AUTHORIZED_CHARACTERS type) {
+    typeAllowed = type;
 }
 
 int TextBox::getCharacterSize() const {

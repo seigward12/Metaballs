@@ -4,7 +4,7 @@
 
 StateManager::StateManager(float width, float height)
     : IsRunning{true},
-      window(sf::VideoMode(width, height), "Diamant", sf::Style::Default),
+      window(sf::VideoMode(width, height), "Metaballs", sf::Style::Default),
       state{nullptr},
       width{width},
       height{height} {

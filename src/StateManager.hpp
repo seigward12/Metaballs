@@ -20,7 +20,7 @@ class StateManager {
 
    public:
     StateManager(float width, float height);
-    ~StateManager() = default;
+    ~StateManager();
 
     void changeState(State* state);
     const sf::RenderWindow& getWindow() const { return window; };

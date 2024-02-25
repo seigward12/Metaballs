@@ -35,7 +35,8 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
     for (int i = 0; i < 4; i++) {
         textboxes.emplace_back(*font);
-        textboxes[i].allowNumberOnly();
+        textboxes[i].setAuthorizedCharacters(
+            AUTHORIZED_CHARACTERS::NUMBER_ONLY);
         textboxes[i].setBackgroundColor(sf::Color(100, 100, 100, 100));
 
         labels.emplace_back();
