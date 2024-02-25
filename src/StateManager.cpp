@@ -9,9 +9,6 @@ StateManager::StateManager(float width, float height)
       width{width},
       height{height} {
     window.setKeyRepeatEnabled(false);
-    window.setMouseCursorGrabbed(true);
-    window.setVerticalSyncEnabled(true);
-    window.setFramerateLimit(FRAMERATE);
 }
 
 StateManager::~StateManager() {
@@ -42,16 +39,11 @@ void StateManager::run() {
 
     while (window.isOpen()) {
         sf::Time dt = clock.restart();
-        timeSinceLastUpdate += dt;
+        processEvents();
+        update(dt);
 
-        while (timeSinceLastUpdate > TIME_PER_FRAME) {
-            timeSinceLastUpdate -= TIME_PER_FRAME;
-            processEvents();
-            update(timeSinceLastUpdate);
-
-            if (state == nullptr)
-                window.close();
-        }
+        if (state == nullptr)
+            window.close();
 
         window.clear();
         window.draw(*state);
