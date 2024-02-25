@@ -47,8 +47,8 @@ void TextBox::processEvent(const sf::Event& event) {
         if (inputString.length() >= textLimit)
             return;
 
-        if (typeAllowed == ALPHA_ONLY || typeAllowed == ALPHA_NUMERIC) {
-            if (!validTextEntered) {
+        if (!validTextEntered) {
+            if (typeAllowed == ALPHA_ONLY || typeAllowed == ALPHA_NUMERIC) {
                 if (isalpha(inputCode)) {
                     inputString += inputCode;
                     validTextEntered = true;
@@ -57,11 +57,9 @@ void TextBox::processEvent(const sf::Event& event) {
                 if (inputCode == ' ')
                     inputString += inputCode;
             }
-        }
 
-        if (typeAllowed == NUMBER_ONLY || typeAllowed == ALPHA_NUMERIC) {
-            if (!validTextEntered) {
-                if (isdigit(inputCode))
+            if (typeAllowed == NUMBER_ONLY || typeAllowed == ALPHA_NUMERIC) {
+                if (isdigit(inputCode) || inputCode == '.')
                     inputString += inputCode;
             }
         }

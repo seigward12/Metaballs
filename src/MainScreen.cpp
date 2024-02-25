@@ -179,7 +179,7 @@ void MainScreen::init() {
     textboxes[0].setTextLimit(5);
 
     textboxes[1].setString(std::to_string(radius).substr(0, 3));
-    textboxes[1].setTextLimit(2);
+    textboxes[1].setTextLimit(3);
 
     textboxes[2].setString(std::to_string(particleSpeed).substr(0, 3));
     textboxes[2].setTextLimit(3);
