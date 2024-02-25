@@ -64,18 +64,6 @@ class TextBox : public sf::Drawable {
 
     AUTHORIZED_CHARACTERS typeAllowed = ALPHA_NUMERIC;
 
-    enum {
-        BACKSPACE = 8,
-        SPACE = 32,
-        PERIOD = 46,
-        ZERO = 48,
-        NINE = 57,
-        A = 65,
-        Z = 90,
-        A_CAPS = 97,
-        Z_CAPS = 122
-    };
-
     float getCharacterWidth() const;
     int calculateMaxCharactersDisplayed();
 };

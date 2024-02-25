@@ -1,4 +1,5 @@
 #include "TextBox.hpp"
+#include <cctype>
 
 TextBox::TextBox(const sf::Font& font) {
     text.setFont(font);
@@ -35,9 +36,10 @@ void TextBox::processEvent(const sf::Event& event) {
         if (!selected)
             return;
 
-        const sf::Uint32 inputCode = event.text.unicode;
+        const unsigned char inputCode =
+            static_cast<unsigned char>(event.text.unicode);
 
-        if (inputCode == sf::Keyboard::Backspace && !inputString.empty()) {
+        if (inputCode == '\b' && !inputString.empty()) {
             inputString.erase(inputString.length() - 1, inputString.length());
             validTextEntered = true;
         }
@@ -47,27 +49,20 @@ void TextBox::processEvent(const sf::Event& event) {
 
         if (typeAllowed == ALPHA_ONLY || typeAllowed == ALPHA_NUMERIC) {
             if (!validTextEntered) {
-                if ((inputCode >= A && inputCode <= Z) ||
-                    (inputCode >= A_CAPS && inputCode <= Z_CAPS)) {
-                    inputString += static_cast<char>(inputCode);
+                if (isalpha(inputCode)) {
+                    inputString += inputCode;
                     validTextEntered = true;
                 }
 
-                if (inputCode == SPACE)
-                    inputString += static_cast<char>(inputCode);
+                if (inputCode == ' ')
+                    inputString += inputCode;
             }
         }
 
         if (typeAllowed == NUMBER_ONLY || typeAllowed == ALPHA_NUMERIC) {
             if (!validTextEntered) {
-                if (inputCode >= sf::Keyboard::Numpad0 &&
-                    inputCode <= sf::Keyboard::Numpad9)
-                    inputString += static_cast<char>(
-                        inputCode - sf::Keyboard::Numpad0 + '0');
-
-                else if (inputCode >= ZERO && inputCode <= NINE ||
-                         inputCode == PERIOD)
-                    inputString += static_cast<char>(inputCode);
+                if (isdigit(inputCode))
+                    inputString += inputCode;
             }
         }
 
