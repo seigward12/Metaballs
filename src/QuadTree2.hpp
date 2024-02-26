@@ -15,6 +15,8 @@ class QuadTree2 : public sf::Drawable {
     bool insert(DataType* object);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     void query(sf::FloatRect range, std::vector<DataType*>& objectsFound);
+    // void queryCollision(const DataType* object,
+    //                     std::vector<DataType*>& objectsFound);
 
    private:
     unsigned short capacity;
@@ -66,12 +68,13 @@ void QuadTree2<DataType>::reset() {
 template <class DataType>
 void QuadTree2<DataType>::draw(sf::RenderTarget& target,
                                sf::RenderStates states) const {
-    target.draw(lines);
     if (divided) {
         target.draw(*northWest, states);
         target.draw(*northEast, states);
         target.draw(*southEast, states);
         target.draw(*southWest, states);
+    } else {
+        target.draw(lines);
     }
 }
 
@@ -97,20 +100,19 @@ void QuadTree2<DataType>::subdivide() {
 
 template <class DataType>
 bool QuadTree2<DataType>::insert(DataType* object) {
-    if (boundary.intersects(object->getGlobalBounds())) {
-        if (objects.size() < capacity) {
-            objects.push_back(object);
-            return true;
-        } else {
-            if (!divided)
-                subdivide();
+    if (!boundary.intersects(object->getGlobalBounds()))
+        return false;
 
-            if (northWest->insert(object) || northEast->insert(object) ||
-                southWest->insert(object) || southEast->insert(object))
-                return true;
-        }
+    if (objects.size() < capacity) {
+        objects.push_back(object);
+        return true;
+    } else {
+        if (!divided)
+            subdivide();
+
+        return northWest->insert(object) || northEast->insert(object) ||
+               southWest->insert(object) || southEast->insert(object);
     }
-    return false;
 }
 
 template <class DataType>

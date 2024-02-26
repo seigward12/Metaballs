@@ -35,7 +35,7 @@ class MainScreen : public State {
     sf::FloatRect boundary;
     ushort treeNodeCapacity;
 
-    std::vector<Particle> myObjects;
+    std::vector<std::unique_ptr<Particle>> myObjects;
     std::vector<Particle*> myCollisions;
 
     sf::RectangleShape mouseRect;
@@ -61,6 +61,8 @@ class MainScreen : public State {
     void initializeObjects();
 
     void moveObjects(const sf::Time& dt);
+
+    void addParticle(const sf::Vector2f& position);
 
     void brush();
 

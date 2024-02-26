@@ -1,10 +1,15 @@
 #include "Particle.hpp"
 
 Particle::Particle(const float radius) {
+    id = count++;
     shape.setPosition(0, 0);
     shape.setRadius(radius);
     shape.setFillColor(sf::Color::White);
     velocity = sf::Vector2f(0, 0);
+}
+
+Particle::~Particle() {
+    count--;
 }
 
 void Particle::update(const sf::Time& dt, const sf::FloatRect boundary) {
@@ -28,7 +33,7 @@ void Particle::update(const sf::Time& dt, const sf::FloatRect boundary) {
         shape.getPosition().y + shape.getRadius() < boundary.top)
         velocity.y *= -1;
 
-    shape.move(velocity * dt.asSeconds());  // TODO verifier si secondes est bon
+    shape.move(velocity * dt.asSeconds());
 }
 
 void Particle::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -73,4 +78,12 @@ sf::CircleShape Particle::getShape() const {
 
 sf::FloatRect Particle::getGlobalBounds() const {
     return shape.getGlobalBounds();
+}
+
+bool Particle::operator==(const Particle& other) const {
+    return id == other.id;
+}
+
+bool Particle::operator!=(const Particle& other) const {
+    return !(*this == other);
 }

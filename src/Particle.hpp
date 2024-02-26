@@ -4,6 +4,7 @@
 class Particle : public sf::Drawable {
    public:
     explicit Particle(float radius);
+    ~Particle();
 
     void update(const sf::Time& dt, sf::FloatRect boundary);
 
@@ -29,7 +30,13 @@ class Particle : public sf::Drawable {
 
     sf::FloatRect getGlobalBounds() const;
 
+    bool operator==(const Particle& other) const;
+    bool operator!=(const Particle& other) const;
+
    private:
     sf::CircleShape shape;
     sf::Vector2f velocity;
+
+    inline static unsigned short count = 0;
+    unsigned short id;
 };

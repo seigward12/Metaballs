@@ -124,7 +124,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
     buttons[4].setOnAction([&]() {
         for (auto& myObject : myObjects)
-            myObject.setPosition(
+            myObject->setPosition(
                 sf::Vector2f((rand() % static_cast<int>(boundary.width)),
                              ((rand() % static_cast<int>(boundary.height)))));
     });
@@ -286,31 +286,30 @@ void MainScreen::update(const sf::Time& dt) {
         brush();
 
     for (auto& myObject : myObjects) {
-        myObject.setColor(defaultColor);
-        quadTree->insert(&myObject);
+        myObject->setColor(defaultColor);
+        quadTree->insert(myObject.get());
     }
 
     for (auto& myObject : myObjects) {
-        // already queried the object for collisions
-        if (myObject.getColor() == collisionColor)
+        if (myObject->getColor() == collisionColor)
             continue;
 
-        // query the quadtree for each object's global bounds and store the
-        // results in myCollisions
-        quadTree->query(myObject.getGlobalBounds(), myCollisions);
+        quadTree->query(myObject->getGlobalBounds(), myCollisions);
 
-        for (const auto& myCollision : myCollisions)
-            if (Collision::ParticleCollision(myObject, *myCollision)) {
-                // changing the color of the colliding objects
-                myObject.setColor(collisionColor);
+        for (const auto& myCollision : myCollisions) {
+            if (*myObject == *myCollision)
+                continue;
+
+            if (Collision::ParticleCollision(*myObject, *myCollision)) {
+                myObject->setColor(collisionColor);
                 myCollision->setColor(collisionColor);
             }
+        }
 
         myCollisions.clear();
     }
 
     if (showMouseRect) {
-        // query the quadtree for the mouseRect's global bounds
         quadTree->query(mouseRect.getGlobalBounds(), myCollisions);
 
         for (const auto& myCollision : myCollisions)
@@ -328,7 +327,7 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
         target.draw(*quadTree);
 
     for (auto& myObject : myObjects)
-        target.draw(myObject);
+        target.draw(*myObject);
 
     if (showMouseRect)
         target.draw(mouseRect);
@@ -346,19 +345,14 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 
 void MainScreen::moveObjects(const sf::Time& dt) {
     for (auto& myObject : myObjects)
-        myObject.update(dt, boundary);
+        myObject->update(dt, boundary);
 }
 
 void MainScreen::initializeObjects() {
     myObjects.clear();
-    Particle particle(radius);
     for (ushort i = 0; i < objectNum; i++) {
-        particle.setPosition(sf::Vector2f((rand() % (int)boundary.width),
-                                          ((rand() % (int)boundary.height))));
-        particle.setVelocity(
-            sf::Vector2f((rand() % (int)particleSpeed - (particleSpeed) / 2),
-                         (rand() % (int)particleSpeed - (particleSpeed) / 2)));
-        myObjects.push_back(particle);
+        addParticle(sf::Vector2f((rand() % (int)boundary.width),
+                                 ((rand() % (int)boundary.height))));
     }
 }
 
@@ -368,18 +362,19 @@ void MainScreen::brush() {
 
     if (xPos > boundary.left + boundary.width || xPos < boundary.left ||
         yPos > boundary.top + boundary.height || yPos < boundary.top)
-
         return;
 
-    Particle particle(radius);
-
-    particle.setPosition(sf::Vector2f(xPos, yPos));
-    particle.setVelocity(sf::Vector2f(
-        (rand() % static_cast<int>(particleSpeed) - (particleSpeed) / 2),
-        (rand() % static_cast<int>(particleSpeed) - (particleSpeed) / 2)));
-    myObjects.push_back(particle);
+    addParticle(sf::Vector2f(xPos, yPos));
     objectNum++;
     textboxes[0].setString(std::to_string(objectNum));
+}
+
+void MainScreen::addParticle(const sf::Vector2f& position) {
+    myObjects.push_back(std::make_unique<Particle>(radius));
+    myObjects.back()->setPosition(position);
+    myObjects.back()->setVelocity(
+        sf::Vector2f((rand() % (int)particleSpeed - (particleSpeed) / 2),
+                     (rand() % (int)particleSpeed - (particleSpeed) / 2)));
 }
 
 void MainScreen::resize(const sf::Event& event) {
@@ -396,13 +391,13 @@ void MainScreen::resize(const sf::Event& event) {
         std::make_unique<QuadTree2<Particle>>(boundary, treeNodeCapacity);
 
     for (auto& myObject : myObjects) {
-        if (myObject.getPosition().x > boundary.width)
-            myObject.setPosition(
-                sf::Vector2f(boundary.width, myObject.getPosition().y));
+        if (myObject->getPosition().x > boundary.width)
+            myObject->setPosition(
+                sf::Vector2f(boundary.width, myObject->getPosition().y));
 
-        if (myObject.getPosition().y > boundary.height)
-            myObject.setPosition(
-                sf::Vector2f(myObject.getPosition().x, boundary.height));
+        if (myObject->getPosition().y > boundary.height)
+            myObject->setPosition(
+                sf::Vector2f(myObject->getPosition().x, boundary.height));
     }
 
     init();
