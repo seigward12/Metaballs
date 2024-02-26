@@ -280,19 +280,24 @@ void MainScreen::update(const sf::Time& dt) {
     for (auto& textboxe : textboxes)
         textboxe.update();
 
-    quadTree->reset();
-
     if (brushMode && pressed)
         brush();
 
-    for (auto& myObject : myObjects) {
-        myObject->setColor(defaultColor);
-        quadTree->insert(myObject.get());
+    if (!pause) {
+        moveObjects(dt);
+        quadTree->reset();
+        for (auto& myObject : myObjects) {
+            quadTree->insert(myObject.get());
+        }
     }
 
     for (auto& myObject : myObjects) {
-        if (myObject->getColor() == collisionColor)
-            continue;
+        myObject->setColor(defaultColor);
+    }
+
+    for (auto& myObject : myObjects) {
+        // if (myObject->getColor() == collisionColor)
+        //     continue;
 
         quadTree->query(myObject->getGlobalBounds(), myCollisions);
 
@@ -317,9 +322,6 @@ void MainScreen::update(const sf::Time& dt) {
 
         myCollisions.clear();
     }
-
-    if (!pause)
-        moveObjects(dt);
 }
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -370,7 +372,8 @@ void MainScreen::brush() {
 }
 
 void MainScreen::addParticle(const sf::Vector2f& position) {
-    myObjects.push_back(std::make_unique<Particle>(radius));
+    myObjects.push_back(
+        std::make_unique<Particle>((radius / 2) + rand() % (int)radius));
     myObjects.back()->setPosition(position);
     myObjects.back()->setVelocity(
         sf::Vector2f((rand() % (int)particleSpeed - (particleSpeed) / 2),

@@ -1,13 +1,12 @@
 #include "Common.hpp"
 
-#include <cmath>
-
 namespace Collision {
 bool CircleShapeCollision(const sf::CircleShape& A, const sf::CircleShape& B) {
-    const float distance =
-        sqrt(pow(A.getGlobalBounds().left - B.getGlobalBounds().left, 2) +
-             pow(A.getGlobalBounds().top - B.getGlobalBounds().top, 2));
-    return distance < A.getRadius() + B.getRadius();
+    const float distanceX = A.getPosition().x - B.getPosition().x;
+    const float distanceY = A.getPosition().y - B.getPosition().y;
+    const float minDistance = A.getRadius() + B.getRadius();
+    return (distanceX * distanceX) + (distanceY * distanceY) <=
+           (minDistance * minDistance);
 }
 
 bool ParticleCollision(const Particle& A, const Particle& B) {
