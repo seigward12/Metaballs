@@ -3,9 +3,11 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
+#include <memory>
 #include "Button.hpp"
 #include "Particle.hpp"
 #include "QuadTree.hpp"
+#include "QuadTree2.hpp"
 #include "State.hpp"
 #include "StateManager.hpp"
 #include "TextBox.hpp"
@@ -28,7 +30,8 @@ class MainScreen : public State {
     bool showMouseRect = false;
     float particleSpeed = 100.f;
 
-    QuadTree<Particle> quadTree;
+    // QuadTree<Particle> quadTree;
+    std::unique_ptr<QuadTree2<Particle>> quadTree;
     sf::FloatRect boundary;
     ushort treeNodeCapacity;
 

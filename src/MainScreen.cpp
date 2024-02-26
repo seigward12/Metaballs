@@ -15,7 +15,9 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
     treeNodeCapacity = 4, objectNum = 800, radius = 2.0;
 
-    quadTree.setData(boundary, treeNodeCapacity);
+    quadTree =
+        std::make_unique<QuadTree2<Particle>>(boundary, treeNodeCapacity);
+    // quadTree->setData(boundary, treeNodeCapacity);
 
     font = new sf::Font();
 
@@ -83,7 +85,9 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
         }
 
         if (std::stoi(textboxes[3].getString()) != treeNodeCapacity) {
-            quadTree.setData(boundary, std::stoi(textboxes[3].getString()));
+            quadTree = std::make_unique<QuadTree2<Particle>>(
+                boundary, std::stoi(textboxes[3].getString()));
+            // quadTree->setData(boundary, std::stoi(textboxes[3].getString()));
             noChange = false;
         }
 
@@ -276,16 +280,14 @@ void MainScreen::update(const sf::Time& dt) {
     for (auto& textboxe : textboxes)
         textboxe.update();
 
-    // reconstructing the tree every frame
-    quadTree.reset();
+    quadTree->reset();
 
     if (brushMode && pressed)
         brush();
 
-    // inserting all the objects into the tree every frame
     for (auto& myObject : myObjects) {
         myObject.setColor(defaultColor);
-        quadTree.insert(&myObject);
+        quadTree->insert(&myObject);
     }
 
     for (auto& myObject : myObjects) {
@@ -295,7 +297,7 @@ void MainScreen::update(const sf::Time& dt) {
 
         // query the quadtree for each object's global bounds and store the
         // results in myCollisions
-        quadTree.query(myObject.getGlobalBounds(), myCollisions);
+        quadTree->query(myObject.getGlobalBounds(), myCollisions);
 
         for (const auto& myCollision : myCollisions)
             if (Collision::ParticleCollision(myObject, *myCollision)) {
@@ -309,7 +311,7 @@ void MainScreen::update(const sf::Time& dt) {
 
     if (showMouseRect) {
         // query the quadtree for the mouseRect's global bounds
-        quadTree.query(mouseRect.getGlobalBounds(), myCollisions);
+        quadTree->query(mouseRect.getGlobalBounds(), myCollisions);
 
         for (const auto& myCollision : myCollisions)
             myCollision->setColor(mouseRectColor);
@@ -323,7 +325,7 @@ void MainScreen::update(const sf::Time& dt) {
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     if (showQuadTree)
-        target.draw(quadTree);
+        target.draw(*quadTree);
 
     for (auto& myObject : myObjects)
         target.draw(myObject);
@@ -389,7 +391,9 @@ void MainScreen::resize(const sf::Event& event) {
     stateManager->height = event.size.height;
     boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
                              stateManager->height - 20);
-    quadTree.setData(boundary, treeNodeCapacity);
+    // quadTree->setData(boundary, treeNodeCapacity);
+    quadTree =
+        std::make_unique<QuadTree2<Particle>>(boundary, treeNodeCapacity);
 
     for (auto& myObject : myObjects) {
         if (myObject.getPosition().x > boundary.width)

@@ -8,11 +8,12 @@ include(FetchContent)
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
     GIT_TAG 2.6.x)
-FetchContent_MakeAvailable(SFML)
+FetchContent_MakeAvailable(SFML) 
 
 
 file(GLOB_RECURSE SOURCES_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.cpp")
-add_executable(${PROJECT_NAME} ${SOURCES_CPP})
+file(GLOB_RECURSE SOURCES_HPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.hpp")
+add_executable(${PROJECT_NAME} ${SOURCES_CPP} ${SOURCES_HPP})
 
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
