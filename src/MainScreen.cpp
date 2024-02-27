@@ -302,7 +302,7 @@ void MainScreen::update(const sf::Time& dt) {
         quadTree->query(myObject->getGlobalBounds(), myCollisions);
 
         for (const auto& myCollision : myCollisions) {
-            if (*myObject == *myCollision)
+            if (myObject.get() == myCollision)
                 continue;
 
             if (Collision::ParticleCollision(*myObject, *myCollision)) {

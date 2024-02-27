@@ -13,24 +13,14 @@ Particle::~Particle() {
 }
 
 void Particle::update(const sf::Time& dt, const sf::FloatRect boundary) {
-    if (shape.getPosition().x - shape.getRadius() < boundary.left ||
-        shape.getPosition().x + shape.getRadius() >
+    if (shape.getPosition().x < boundary.left ||
+        shape.getPosition().x + shape.getRadius() * 2 >
             boundary.left + boundary.width)
         velocity.x *= -1;
 
-    if (shape.getPosition().y - shape.getRadius() < boundary.top ||
-        shape.getPosition().y + shape.getRadius() >
+    if (shape.getPosition().y < boundary.top ||
+        shape.getPosition().y + shape.getRadius() * 2 >
             boundary.top + boundary.height)
-        velocity.y *= -1;
-
-    if (shape.getPosition().x - shape.getRadius() >
-            boundary.left + boundary.width ||
-        shape.getPosition().x + shape.getRadius() < boundary.left)
-        velocity.x *= -1;
-
-    if (shape.getPosition().y - shape.getRadius() >
-            boundary.top + boundary.height ||
-        shape.getPosition().y + shape.getRadius() < boundary.top)
         velocity.y *= -1;
 
     shape.move(velocity * dt.asSeconds());
@@ -41,7 +31,8 @@ void Particle::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 }
 
 void Particle::setPosition(const sf::Vector2f position) {
-    shape.setPosition(position);
+    shape.setPosition(position -
+                      sf::Vector2f(shape.getRadius(), shape.getRadius()));
 }
 
 void Particle::setVelocity(const sf::Vector2f velocity) {
