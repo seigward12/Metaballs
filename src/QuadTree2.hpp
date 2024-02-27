@@ -5,6 +5,7 @@
 #include <vector>
 
 const unsigned short DIVISION_SIZE = 4;
+const unsigned short LINES_PER_NODE = 3;
 
 template <class DataType>
 class QuadTree2 : public sf::Drawable {
@@ -24,7 +25,8 @@ class QuadTree2 : public sf::Drawable {
     std::unique_ptr<QuadTree2> northWest, northEast, southWest,
         southEast = nullptr;
     std::vector<DataType*> objects{};
-    sf::VertexArray lines{sf::LineStrip, DIVISION_SIZE};
+    sf::VertexArray parentLines{sf::LineStrip, LINES_PER_NODE};
+    sf::VertexArray childLines{sf::LineStrip, LINES_PER_NODE};
     const sf::FloatRect boundary{};
 
     void subdivide();
@@ -34,17 +36,21 @@ template <class DataType>
 QuadTree2<DataType>::QuadTree2(const sf::FloatRect& boundary,
                                unsigned short capacity)
     : capacity(capacity), boundary(boundary) {
-    lines[0].position = boundary.getPosition();
-    lines[1].position =
-        boundary.getPosition() + sf::Vector2f(boundary.width, 0);
-    lines[2].position =
+    parentLines[0].position =
+        boundary.getPosition() + sf::Vector2f(0.f, boundary.height);
+    parentLines[1].position = boundary.getPosition();
+    parentLines[2].position =
+        boundary.getPosition() + sf::Vector2f(boundary.width, 0.f);
+    childLines[0].position = parentLines[2].position;
+    childLines[1].position =
         boundary.getPosition() + sf::Vector2f(boundary.width, boundary.height);
-    lines[3].position =
-        boundary.getPosition() + sf::Vector2f(0, boundary.height);
+    childLines[2].position =
+        boundary.getPosition() + sf::Vector2f(0.f, boundary.height);
 
     const sf::Color color = sf::Color::Yellow;
-    for (int i = 0; i < lines.getVertexCount(); ++i) {
-        lines[i].color = color;
+    for (int i = 0; i < LINES_PER_NODE; ++i) {
+        parentLines[i].color = color;
+        childLines[i].color = color;
     }
 }
 
@@ -69,12 +75,13 @@ template <class DataType>
 void QuadTree2<DataType>::draw(sf::RenderTarget& target,
                                sf::RenderStates states) const {
     if (divided) {
+        target.draw(parentLines);
         target.draw(*northWest, states);
         target.draw(*northEast, states);
         target.draw(*southEast, states);
         target.draw(*southWest, states);
     } else {
-        target.draw(lines);
+        target.draw(childLines);
     }
 }
 
