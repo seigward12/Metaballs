@@ -13,15 +13,27 @@ Particle::~Particle() {
 }
 
 void Particle::update(const sf::Time& dt, const sf::FloatRect boundary) {
-    if (shape.getPosition().x < boundary.left ||
-        shape.getPosition().x + shape.getRadius() * 2 >
-            boundary.left + boundary.width)
+    if (shape.getPosition().x < boundary.left) {
         velocity.x *= -1;
+        shape.setPosition(boundary.left, shape.getPosition().y);
+    } else if (shape.getPosition().x + shape.getRadius() * 2 >
+               boundary.left + boundary.width) {
+        velocity.x *= -1;
+        shape.setPosition(
+            boundary.left + boundary.width - shape.getRadius() * 2,
+            shape.getPosition().y);
+    }
 
-    if (shape.getPosition().y < boundary.top ||
-        shape.getPosition().y + shape.getRadius() * 2 >
-            boundary.top + boundary.height)
+    if (shape.getPosition().y < boundary.top) {
         velocity.y *= -1;
+        shape.setPosition(shape.getPosition().x, boundary.top);
+    } else if (shape.getPosition().y + shape.getRadius() * 2 >
+               boundary.top + boundary.height) {
+        velocity.y *= -1;
+        shape.setPosition(
+            shape.getPosition().x,
+            boundary.top + boundary.height - shape.getRadius() * 2);
+    }
 
     shape.move(velocity * dt.asSeconds());
 }
