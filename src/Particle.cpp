@@ -60,7 +60,8 @@ void Particle::setColor(const sf::Color color) {
 }
 
 sf::Vector2f Particle::getPosition() const {
-    return shape.getPosition();
+    return shape.getPosition() +
+           sf::Vector2f(shape.getRadius(), shape.getRadius());
 }
 
 sf::Vector2f Particle::getVelocity() const {
@@ -92,8 +93,8 @@ bool Particle::operator!=(const Particle& other) const {
 }
 
 bool Particle::isColliding(const Particle& other) const {
-    const float distanceX = this->getPosition().x - other.getPosition().x;
-    const float distanceY = this->getPosition().y - other.getPosition().y;
+    const float distanceX = shape.getPosition().x - other.shape.getPosition().x;
+    const float distanceY = shape.getPosition().y - other.shape.getPosition().y;
     const float minDistance = this->getRadius() + other.getRadius();
     return (distanceX * distanceX) + (distanceY * distanceY) <=
            (minDistance * minDistance);
