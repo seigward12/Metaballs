@@ -9,6 +9,7 @@ StateManager::StateManager(float width, float height)
       width{width},
       height{height} {
     window.setKeyRepeatEnabled(false);
+    window.setFramerateLimit(144);  // TODO
 }
 
 StateManager::~StateManager() {

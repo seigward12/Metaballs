@@ -103,22 +103,34 @@ void QuadTree<DataType>::subdivide() {
     northEast = std::make_unique<QuadTree<DataType>>(ne, capacity);
     southWest = std::make_unique<QuadTree<DataType>>(sw, capacity);
     southEast = std::make_unique<QuadTree<DataType>>(se, capacity);
+
+    while (!objects.empty()) {
+        DataType* object = objects.back();
+        objects.pop_back();
+        insert(object);
+    }
 }
 
 template <class DataType>
 bool QuadTree<DataType>::insert(DataType* object) {
-    if (!boundary.intersects(object->getGlobalBounds()))
+    sf::Vector2f position = object->getPosition();
+    if (boundary.top > position.y || boundary.left > position.x ||
+        boundary.top + boundary.height < position.y ||
+        boundary.left + boundary.width < position.x)
         return false;
 
-    if (objects.size() < capacity) {
-        objects.push_back(object);
-        return true;
-    } else {
-        if (!divided)
-            subdivide();
-
+    if (divided) {
+    dividedInsert:
         return northWest->insert(object) || northEast->insert(object) ||
                southWest->insert(object) || southEast->insert(object);
+    } else {
+        if (objects.size() < capacity) {
+            objects.push_back(object);
+            return true;
+        } else {
+            subdivide();
+            goto dividedInsert;
+        }
     }
 }
 
@@ -133,10 +145,11 @@ void QuadTree<DataType>::query(sf::FloatRect range,
         northEast->query(range, objectsFound);
         southWest->query(range, objectsFound);
         southEast->query(range, objectsFound);
-    }
-    for (DataType* object : objects) {
-        if (range.intersects(object->getGlobalBounds())) {
-            objectsFound.push_back(object);
+    } else {
+        for (DataType* object : objects) {
+            if (range.intersects(object->getGlobalBounds())) {
+                objectsFound.push_back(object);
+            }
         }
     }
 }
