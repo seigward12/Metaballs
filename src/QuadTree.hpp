@@ -1,115 +1,57 @@
 #pragma once
+
 #include <SFML/Graphics.hpp>
+#include <memory>
 #include <vector>
 
-typedef unsigned short ushort;
+const unsigned short DIVISION_SIZE = 4;
+const unsigned short LINES_PER_NODE = 3;
+
 template <class DataType>
 class QuadTree : public sf::Drawable {
-   private:
-    class Node {
-       public:
-        Node(sf::FloatRect boundary, ushort capacity) {
-            NE = NW = SE = SW = nullptr;
-
-            this->boundary = boundary;
-            this->capacity = capacity;
-            this->divided = false;
-
-            const sf::Vector2f position(boundary.left, boundary.top);
-            const sf::Vector2f size(boundary.width, boundary.height);
-
-            const sf::Color color = sf::Color::Yellow;
-
-            this->lines[0] = sf::Vertex(position, color);
-            this->lines[1] =
-                sf::Vertex(position + sf::Vector2f(size.x, 0), color);
-            this->lines[2] = sf::Vertex(position + size, color);
-            this->lines[3] =
-                sf::Vertex(position + sf::Vector2f(0, size.y), color);
-            this->lines[4] = sf::Vertex(position, color);
-        }
-
-        sf::FloatRect boundary;
-        ushort capacity{};
-        bool divided{};
-        sf::Vertex lines[5];
-
-        std::vector<DataType*> objects{};
-
-        Node* NE;
-        Node* NW;
-        Node* SE;
-        Node* SW;
-
-        // Subdivides the QuadTree into 4 smaller QuadTrees
-        void subdivide() {
-            const float x1 = boundary.left;
-            const float y1 = boundary.top;
-            const float x2 = boundary.width + x1;
-            const float y2 = boundary.height + y1;
-
-            // setting sides for each rectangle appropriately
-            const sf::Vector2f size(boundary.width / 2, boundary.height / 2);
-
-            sf::FloatRect ne(sf::Vector2f((x1 + x2) / 2, y1), size);
-            sf::FloatRect nw(sf::Vector2f(x1, y1), size);
-            sf::FloatRect se(sf::Vector2f((x1 + x2) / 2, (y1 + y2) / 2), size);
-            sf::FloatRect sw(sf::Vector2f(x1, (y1 + y2) / 2), size);
-
-            NE = new Node(ne, capacity);
-            NW = new Node(nw, capacity);
-            SE = new Node(se, capacity);
-            SW = new Node(sw, capacity);
-
-            this->divided = true;
-        }
-        void draw(sf::RenderTarget& target) const {
-            target.draw(this->lines, 5, sf::LineStrip);
-        }
-    };
-
-    Node* root;
-
-    void insert_helper(DataType* object, Node* node);
-
-    void query_helper(sf::FloatRect range,
-                      std::vector<DataType*>& objectsFound,
-                      Node* node);
-
-    bool search_helper(DataType* object, Node* node);
-
-    void reset_helper(Node* node);
-
-    void draw_helper(sf::RenderTarget& target, Node* node) const;
-
    public:
-    QuadTree();
-    QuadTree(sf::FloatRect boundary, ushort capacity);
+    QuadTree(const sf::FloatRect& boundary, unsigned short capacity);
     ~QuadTree();
-
-    void setData(sf::FloatRect boundary, ushort capacity);
-
     void reset();
-
-    void insert(DataType* object);
-
-    void query(sf::FloatRect range, std::vector<DataType*>& objectsFound);
-
-    bool search(DataType* object);
-
-    bool equals(DataType* A, DataType* B);
-
+    bool insert(DataType* object);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    void query(sf::FloatRect range, std::vector<DataType*>& objectsFound);
+    // void queryCollision(const DataType* object,
+    //                     std::vector<DataType*>& objectsFound);
+
+   private:
+    unsigned short capacity;
+    bool divided = false;
+    std::unique_ptr<QuadTree> northWest, northEast, southWest,
+        southEast = nullptr;
+    std::vector<DataType*> objects{};
+    sf::VertexArray parentLines{sf::LineStrip, LINES_PER_NODE};
+    sf::VertexArray childLines{sf::LineStrip, LINES_PER_NODE};
+    const sf::FloatRect boundary{};
+
+    void subdivide();
 };
 
 template <class DataType>
-QuadTree<DataType>::QuadTree() {
-    root = nullptr;
-}
+QuadTree<DataType>::QuadTree(const sf::FloatRect& boundary,
+                             unsigned short capacity)
+    : capacity(capacity), boundary(boundary) {
+    parentLines[0].position =
+        boundary.getPosition() + sf::Vector2f(0.f, boundary.height);
+    parentLines[1].position = boundary.getPosition();
+    parentLines[2].position =
+        boundary.getPosition() + sf::Vector2f(boundary.width, 0.f);
+    childLines[0].position = parentLines[2].position;
+    childLines[1].position =
+        boundary.getPosition() + sf::Vector2f(boundary.width, boundary.height);
+    childLines[2].position =
+        boundary.getPosition() + sf::Vector2f(0.f, boundary.height);
 
-template <class DataType>
-QuadTree<DataType>::QuadTree(sf::FloatRect boundary, ushort capacity) {
-    setData(boundary, capacity);
+    const sf::Color color = sf::Color::Yellow;
+    for (int i = 0; i < LINES_PER_NODE; ++i) {
+        parentLines[i].color = color;
+        childLines[i].color = color;
+    }
 }
 
 template <class DataType>
@@ -118,151 +60,83 @@ QuadTree<DataType>::~QuadTree() {
 }
 
 template <class DataType>
-void QuadTree<DataType>::setData(sf::FloatRect boundary, ushort capacity) {
-    root = new Node(boundary, capacity);
-}
-
-template <class DataType>
 void QuadTree<DataType>::reset() {
-    reset_helper(root);
+    // if (divided) {
+    //     delete northWest.re;
+    //     delete northEast;
+    //     delete southWest;
+    //     delete southEast;
+    // }
+    divided = false;
+    objects.clear();
 }
 
 template <class DataType>
-void QuadTree<DataType>::reset_helper(Node* node) {
-    if (node->divided) {
-        reset_helper(node->NE);
-        reset_helper(node->NW);
-        reset_helper(node->SE);
-        reset_helper(node->SW);
-
-        node->divided = false;
-
-        delete node->NE;
-        delete node->NW;
-        delete node->SE;
-        delete node->SW;
+void QuadTree<DataType>::draw(sf::RenderTarget& target,
+                              sf::RenderStates states) const {
+    if (divided) {
+        target.draw(parentLines);
+        target.draw(*northWest, states);
+        target.draw(*northEast, states);
+        target.draw(*southEast, states);
+        target.draw(*southWest, states);
+    } else {
+        target.draw(childLines);
     }
-    node->objects.clear();
 }
 
 template <class DataType>
-void QuadTree<DataType>::insert(DataType* object) {
-    insert_helper(object, root);
+void QuadTree<DataType>::subdivide() {
+    divided = true;
+    const sf::Vector2f dividedSize(boundary.width / 2, boundary.height / 2);
+
+    const sf::FloatRect nw(boundary.getPosition(), dividedSize);
+    const sf::FloatRect ne(nw.getPosition() + sf::Vector2f(dividedSize.x, 0),
+                           nw.getSize());
+    const sf::FloatRect se(
+        nw.getPosition() + sf::Vector2f(dividedSize.x, dividedSize.y),
+        nw.getSize());
+    const sf::FloatRect sw(nw.getPosition() + sf::Vector2f(0, dividedSize.y),
+                           nw.getSize());
+
+    northWest = std::make_unique<QuadTree<DataType>>(nw, capacity);
+    northEast = std::make_unique<QuadTree<DataType>>(ne, capacity);
+    southWest = std::make_unique<QuadTree<DataType>>(sw, capacity);
+    southEast = std::make_unique<QuadTree<DataType>>(se, capacity);
 }
 
 template <class DataType>
-void QuadTree<DataType>::insert_helper(DataType* object, Node* node) {
-    //// the search function considerably slows down the Quad Tree
-    //// as it recursively checks the whole quad tree for the object
-    //// everytime insert is called, so it is better to not use it
-    //// and make sure not to reinsert the object into the tree
+bool QuadTree<DataType>::insert(DataType* object) {
+    if (!boundary.intersects(object->getGlobalBounds()))
+        return false;
 
-    //// if the object is already in the tree, it returns
-    // if (search_helper(object, node))
-    //     return;
+    if (objects.size() < capacity) {
+        objects.push_back(object);
+        return true;
+    } else {
+        if (!divided)
+            subdivide();
 
-    // if the object is not within the boundary, it returns
-    if (!node->boundary.intersects(object->getGlobalBounds()))
-        return;
-
-    // adds the object to the if capacity is not reached yet
-    if (node->objects.size() < node->capacity)
-        node->objects.push_back(object);
-    else {
-        if (!node->divided)
-            node->subdivide();
-
-        insert_helper(object, node->NE);
-        insert_helper(object, node->NW);
-        insert_helper(object, node->SE);
-        insert_helper(object, node->SW);
+        return northWest->insert(object) || northEast->insert(object) ||
+               southWest->insert(object) || southEast->insert(object);
     }
 }
 
 template <class DataType>
 void QuadTree<DataType>::query(sf::FloatRect range,
                                std::vector<DataType*>& objectsFound) {
-    query_helper(range, objectsFound, root);
-}
-
-template <class DataType>
-void QuadTree<DataType>::query_helper(sf::FloatRect range,
-                                      std::vector<DataType*>& objectsFound,
-                                      Node* node) {
-    if (!node->boundary.intersects(range))
+    if (!boundary.intersects(range))
         return;
-    else {
-        for (ushort i = 0; i < node->objects.size(); i++) {
-            if (range.intersects(node->objects[i]->getGlobalBounds())) {
-                // does not push the object itself back into the set
-                if (range == node->objects[i]->getGlobalBounds())
-                    continue;
 
-                bool duplicate = false;
-                for (ushort j = 0; j < objectsFound.size(); j++) {
-                    if (equals(node->objects[i], objectsFound[j])) {
-                        duplicate = true;
-                        break;
-                    }
-                }
-                if (!duplicate)
-                    objectsFound.push_back(node->objects[i]);
-            }
-        }
-        if (node->divided) {  // gets all objects in the sub trees that exist
-            query_helper(range, objectsFound, node->NE);
-            query_helper(range, objectsFound, node->NW);
-            query_helper(range, objectsFound, node->SE);
-            query_helper(range, objectsFound, node->SW);
+    if (divided) {
+        northWest->query(range, objectsFound);
+        northEast->query(range, objectsFound);
+        southWest->query(range, objectsFound);
+        southEast->query(range, objectsFound);
+    }
+    for (DataType* object : objects) {
+        if (range.intersects(object->getGlobalBounds())) {
+            objectsFound.push_back(object);
         }
     }
-}
-
-template <class DataType>
-bool QuadTree<DataType>::search(DataType* object) {
-    return search_helper(object, root);
-}
-
-template <class DataType>
-bool QuadTree<DataType>::search_helper(DataType* object, Node* node) {
-    for (ushort i = 0; i < node->objects.size(); i++) {
-        if (equals(object, node->objects[i]))
-            return true;
-    }
-    if (node->divided) {
-        if (search_helper(object, node->NE))
-            return true;
-        if (search_helper(object, node->NW))
-            return true;
-        if (search_helper(object, node->SE))
-            return true;
-        if (search_helper(object, node->SW))
-            return true;
-    }
-    return false;
-}
-
-template <class DataType>
-void QuadTree<DataType>::draw(sf::RenderTarget& target,
-                              sf::RenderStates states) const {
-    draw_helper(target, root);
-}
-
-template <class DataType>
-void QuadTree<DataType>::draw_helper(sf::RenderTarget& target,
-                                     Node* node) const {
-    node->draw(target);
-
-    if (node->divided) {
-        draw_helper(target, node->NE);
-        draw_helper(target, node->NW);
-        draw_helper(target, node->SE);
-        draw_helper(target, node->SW);
-    }
-}
-
-template <class DataType>
-inline bool QuadTree<DataType>::equals(DataType* A, DataType* B) {
-    return A->getGlobalBounds() == B->getGlobalBounds() &&
-           A->getPosition() == B->getPosition();
 }

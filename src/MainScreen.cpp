@@ -15,8 +15,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
     treeNodeCapacity = 4, objectNum = 800, radius = 2.0;
 
-    quadTree =
-        std::make_unique<QuadTree2<Particle>>(boundary, treeNodeCapacity);
+    quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
     // quadTree->setData(boundary, treeNodeCapacity);
 
     font = new sf::Font();
@@ -85,7 +84,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
         }
 
         if (std::stoi(textboxes[3].getString()) != treeNodeCapacity) {
-            quadTree = std::make_unique<QuadTree2<Particle>>(
+            quadTree = std::make_unique<QuadTree<Particle>>(
                 boundary, std::stoi(textboxes[3].getString()));
             // quadTree->setData(boundary, std::stoi(textboxes[3].getString()));
             noChange = false;
@@ -352,7 +351,7 @@ void MainScreen::moveObjects(const sf::Time& dt) {
 
 void MainScreen::initializeObjects() {
     myObjects.clear();
-    for (ushort i = 0; i < objectNum; i++) {
+    for (unsigned short i = 0; i < objectNum; i++) {
         addParticle(sf::Vector2f((rand() % (int)boundary.width),
                                  ((rand() % (int)boundary.height))));
     }
@@ -390,8 +389,7 @@ void MainScreen::resize(const sf::Event& event) {
     boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
                              stateManager->height - 20);
     // quadTree->setData(boundary, treeNodeCapacity);
-    quadTree =
-        std::make_unique<QuadTree2<Particle>>(boundary, treeNodeCapacity);
+    quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 
     for (auto& myObject : myObjects) {
         if (myObject->getPosition().x > boundary.width)

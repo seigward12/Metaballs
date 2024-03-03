@@ -7,7 +7,6 @@
 #include "Button.hpp"
 #include "Particle.hpp"
 #include "QuadTree.hpp"
-#include "QuadTree2.hpp"
 #include "State.hpp"
 #include "StateManager.hpp"
 #include "TextBox.hpp"
@@ -31,9 +30,9 @@ class MainScreen : public State {
     float particleSpeed = 100.f;
 
     // QuadTree<Particle> quadTree;
-    std::unique_ptr<QuadTree2<Particle>> quadTree;
+    std::unique_ptr<QuadTree<Particle>> quadTree;
     sf::FloatRect boundary;
-    ushort treeNodeCapacity;
+    unsigned short treeNodeCapacity;
 
     std::vector<std::unique_ptr<Particle>> myObjects;
     std::vector<Particle*> myCollisions;
@@ -44,7 +43,7 @@ class MainScreen : public State {
 
     sf::Font* font;
 
-    ushort objectNum;
+    unsigned short objectNum;
 
     float radius;
 
