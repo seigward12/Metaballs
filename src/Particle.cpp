@@ -90,3 +90,11 @@ bool Particle::operator==(const Particle& other) const {
 bool Particle::operator!=(const Particle& other) const {
     return !(*this == other);
 }
+
+bool Particle::isColliding(const Particle& other) const {
+    const float distanceX = this->getPosition().x - other.getPosition().x;
+    const float distanceY = this->getPosition().y - other.getPosition().y;
+    const float minDistance = this->getRadius() + other.getRadius();
+    return (distanceX * distanceX) + (distanceY * distanceY) <=
+           (minDistance * minDistance);
+}

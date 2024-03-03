@@ -21,6 +21,8 @@ class Particle : public sf::Drawable {
     sf::Color getColor() const;
     sf::CircleShape getShape() const;
 
+    bool isColliding(const Particle& other) const;
+
     bool operator==(const Particle& other) const;
     bool operator!=(const Particle& other) const;
 

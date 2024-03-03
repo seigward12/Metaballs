@@ -1,5 +1,4 @@
 #include "MainScreen.hpp"
-#include "Common.hpp"
 
 #include <SFML/Graphics.hpp>
 #include <iomanip>
@@ -304,7 +303,7 @@ void MainScreen::update(const sf::Time& dt) {
             if (myObject.get() == myCollision)
                 continue;
 
-            if (Collision::ParticleCollision(*myObject, *myCollision)) {
+            if (myObject->isColliding(*myCollision)) {
                 myObject->setColor(collisionColor);
                 myCollision->setColor(collisionColor);
             }
