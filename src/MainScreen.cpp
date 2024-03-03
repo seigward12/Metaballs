@@ -15,11 +15,8 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     treeNodeCapacity = 4, objectNum = 800, radius = 2.0;
 
     quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
-    // quadTree->setData(boundary, treeNodeCapacity);
 
-    font = new sf::Font();
-
-    font->loadFromFile("assets/fonts/arial.ttf");
+    font.loadFromFile("assets/fonts/arial.ttf");
 
     initializeObjects();
 
@@ -31,16 +28,16 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     const sf::FloatRect temp = mouseRect.getGlobalBounds();
     mouseRect.setOrigin(temp.left + temp.width / 2, temp.top + temp.height / 2);
 
-    fpsLabel.setFont(*font);
+    fpsLabel.setFont(font);
 
     for (int i = 0; i < 4; i++) {
-        textboxes.emplace_back(*font);
+        textboxes.emplace_back(font);
         textboxes[i].setAuthorizedCharacters(
             AUTHORIZED_CHARACTERS::NUMBER_ONLY);
         textboxes[i].setBackgroundColor(sf::Color(100, 100, 100, 100));
 
         labels.emplace_back();
-        labels[i].setFont(*font);
+        labels[i].setFont(font);
 
         switch (i) {
             case 0:
@@ -62,7 +59,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     }
 
     for (int i = 0; i < 6; i++)
-        buttons.emplace_back(*font);
+        buttons.emplace_back(font);
 
     buttons[0].setOnAction([&]() {
         for (auto& textbox : textboxes)
@@ -85,7 +82,6 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
         if (std::stoi(textboxes[3].getString()) != treeNodeCapacity) {
             quadTree = std::make_unique<QuadTree<Particle>>(
                 boundary, std::stoi(textboxes[3].getString()));
-            // quadTree->setData(boundary, std::stoi(textboxes[3].getString()));
             noChange = false;
         }
 
@@ -196,7 +192,7 @@ void MainScreen::init() {
 
     for (int i = 0; i < buttons.size(); i++) {
         buttons[i].setBorder(sf::Color(100, 100, 100, 100), 2);
-        buttons[i].setFont(*font);
+        buttons[i].setFont(font);
         buttons[i].setCharacterSize(characterSize);
         buttons[i].setTextColor(sf::Color::White);
         buttons[i].setPosition(
@@ -387,7 +383,6 @@ void MainScreen::resize(const sf::Event& event) {
     stateManager->height = event.size.height;
     boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
                              stateManager->height - 20);
-    // quadTree->setData(boundary, treeNodeCapacity);
     quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 
     for (auto& myObject : myObjects) {

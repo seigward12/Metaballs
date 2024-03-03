@@ -29,7 +29,6 @@ class MainScreen : public State {
     bool showMouseRect = false;
     float particleSpeed = 100.f;
 
-    // QuadTree<Particle> quadTree;
     std::unique_ptr<QuadTree<Particle>> quadTree;
     sf::FloatRect boundary;
     unsigned short treeNodeCapacity;
@@ -41,29 +40,21 @@ class MainScreen : public State {
 
     bool pause, brushMode, pressed;
 
-    sf::Font* font;
+    sf::Font font;
 
     unsigned short objectNum;
-
     float radius;
 
     std::vector<TextBox> textboxes;
     std::vector<sf::Text> labels;
     sf::Text fpsLabel;
-
     sf::Clock fpsTimer;
-
     std::vector<Button> buttons;
 
     void init();
-
     void initializeObjects();
-
     void moveObjects(const sf::Time& dt);
-
     void addParticle(const sf::Vector2f& position);
-
     void brush();
-
     void resize(const sf::Event& event);
 };

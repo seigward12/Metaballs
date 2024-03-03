@@ -42,7 +42,6 @@ class Button : public sf::Drawable {
     void resize();
 
     sf::RectangleShape border;
-    sf::Font font;
     sf::Text text;
 
     bool mouseOver, pressed, disabled;

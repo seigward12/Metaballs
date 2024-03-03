@@ -5,7 +5,6 @@ Button::Button() {
 }
 
 Button::Button(const sf::Font& font) {
-    this->font = font;
     init();
 }
 
@@ -23,7 +22,6 @@ void Button::setDisabled(bool disabled) {
 }
 
 void Button::setFont(const sf::Font& font) {
-    this->font = font;
     text.setFont(font);
 }
 
