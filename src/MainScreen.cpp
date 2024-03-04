@@ -4,15 +4,11 @@
 #include <iomanip>
 #include <iostream>  //TODO : remove
 
-extern float particleSpeed;
-
-static sf::Vector2f button5Position;
-
 MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
                              stateManager->height - 20);
 
-    treeNodeCapacity = 4, objectNum = 800, radius = 2.0;
+    treeNodeCapacity = 4, objectNum = 8, radius = 25;
 
     quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 
@@ -44,7 +40,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     labels[2].setString("Speed:  ");
     labels[3].setString("Node Capacity:  ");
 
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 7; i++)
         buttons.emplace_back(font);
 
     buttons[0].setOnAction([&]() {
@@ -112,13 +108,14 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     buttons[5].setOnAction([&]() {
         brushMode = !brushMode;
         buttons[5].setString(brushMode ? "Cancel Brush Mode" : "Brush Mode");
-        buttons[5].setPosition((
-            brushMode ? sf::Vector2f(button5Position.x -
-                                         buttons[5].getGlobalBounds().width / 6,
-                                     button5Position.y)
-                      : button5Position));
         buttons[5].setBackgroundColor(brushMode ? sf::Color(100, 100, 100, 150)
                                                 : sf::Color::Black);
+    });
+
+    buttons[6].setOnAction([&]() {
+        collisionEnabled = !collisionEnabled;
+        buttons[6].setString(collisionEnabled ? "Disable collisions"
+                                              : "Enable collisions");
     });
 
     init();
@@ -188,14 +185,13 @@ void MainScreen::init() {
                              (stateManager->height * 0.1 * i + 1)));
     }
 
-    button5Position = buttons[5].getPosition();
-
     buttons[0].setString("Apply");
     buttons[1].setString("Pause");
     buttons[2].setString("Show Mouse Query");
     buttons[3].setString("Show QuadTree");
     buttons[4].setString("Randomize");
     buttons[5].setString("Brush Mode");
+    buttons[6].setString("Enable collisions");
 }
 
 void MainScreen::processEvent(const sf::Event& event) {
@@ -318,6 +314,9 @@ void MainScreen::update(const sf::Time& dt) {
 
         myCollisions.clear();
     }
+
+    if (selectedParticle != nullptr)
+        selectedParticle->setColor(sf::Color::Yellow);
 }
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
