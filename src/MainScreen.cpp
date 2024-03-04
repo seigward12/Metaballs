@@ -53,6 +53,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
         if (std::stof(textboxes[1].getString()) != radius) {
             radius = std::stof(textboxes[1].getString());
+            highestRadius = 0;
             noChange = false;
         }
 
@@ -375,16 +376,31 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
     myObjects.back()->setVelocity(
         sf::Vector2f((rand() % (int)particleSpeed - (particleSpeed) / 2),
                      (rand() % (int)particleSpeed - (particleSpeed) / 2)));
+    if (myObjects.back()->getRadius() > highestRadius)
+        highestRadius = myObjects.back()->getRadius();
 }
 
 void MainScreen::selectParticle() {
     sf::FloatRect mouseRect = sf::FloatRect(
-        mousePosition.x, mousePosition.y, 0.1,
-        0.1);  // TODO trouver solution moins ratchet qu'un petit rectangle
+        mousePosition.x - highestRadius, mousePosition.y - highestRadius,
+        highestRadius * 2, highestRadius * 2);
+
     quadTree->query(mouseRect, myCollisions);
+
     if (!myCollisions.empty()) {
-        selectedParticle = myCollisions[0];
-        selectedParticle->setVelocity(sf::Vector2f(0, 0));
+        float minDistanceSquare = highestRadius * highestRadius;
+        for (Particle* particle : myCollisions) {
+            sf::Vector2f distance = particle->getPosition() - mousePosition;
+            float distanceSquare =
+                distance.x * distance.x + distance.y * distance.y;
+            if (distanceSquare <=
+                    particle->getRadius() * particle->getRadius() &&
+                distanceSquare < minDistanceSquare) {
+                selectedParticle = particle;
+            }
+        }
+        if (selectedParticle != nullptr)
+            selectedParticle->setVelocity(sf::Vector2f(0, 0));
         myCollisions.clear();
     }
 }

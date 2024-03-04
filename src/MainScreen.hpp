@@ -48,6 +48,7 @@ class MainScreen : public State {
 
     unsigned short objectNum;
     float radius;
+    float highestRadius = 0;
 
     sf::Font font;
 
