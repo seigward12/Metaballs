@@ -25,10 +25,12 @@ class MainScreen : public State {
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
    private:
-    bool showQuadTree = false;
-    bool showMouseRect = false;
+    bool pause, brushMode, pressed, showQuadTree, showMouseRect = false;
     float particleSpeed = 100.f;
     Particle* selectedParticle = nullptr;
+    sf::RectangleShape mouseRect;
+    sf::Vector2f mousePosition = sf::Vector2f(0, 0);
+    sf::Vector2f oldMousePosition = sf::Vector2f(0, 0);
 
     std::unique_ptr<QuadTree<Particle>> quadTree;
     sf::FloatRect boundary;
@@ -37,14 +39,10 @@ class MainScreen : public State {
     std::vector<std::unique_ptr<Particle>> myObjects;
     std::vector<Particle*> myCollisions;
 
-    sf::RectangleShape mouseRect;
-
-    bool pause, brushMode, pressed;
-
-    sf::Font font;
-
     unsigned short objectNum;
     float radius;
+
+    sf::Font font;
 
     std::vector<TextBox> textboxes;
     std::vector<sf::Text> labels;
@@ -58,4 +56,6 @@ class MainScreen : public State {
     void addParticle(const sf::Vector2f& position);
     void brush();
     void resize(const sf::Event& event);
+    void updateSelectedParticle(const sf::Vector2f& position);
+    void selectParticle();
 };

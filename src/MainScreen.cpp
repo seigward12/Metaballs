@@ -2,13 +2,13 @@
 
 #include <SFML/Graphics.hpp>
 #include <iomanip>
+#include <iostream>  //TODO : remove
 
 extern float particleSpeed;
 
 static sf::Vector2f button5Position;
 
 MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
-    pause = brushMode = pressed = false;
     boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
                              stateManager->height - 20);
 
@@ -209,11 +209,14 @@ void MainScreen::processEvent(const sf::Event& event) {
         case sf::Event::MouseButtonPressed:
             if (event.mouseButton.button == sf::Mouse::Left)
                 pressed = true;
+            if (!brushMode)
+                selectParticle();
             break;
 
         case sf::Event::MouseButtonReleased:
             if (event.mouseButton.button == sf::Mouse::Left)
                 pressed = false;
+            selectedParticle = nullptr;
             break;
 
         case sf::Event::KeyPressed:
@@ -240,7 +243,9 @@ void MainScreen::processEvent(const sf::Event& event) {
             break;
 
         case sf::Event::MouseMoved:
-            mouseRect.setPosition(event.mouseMove.x, event.mouseMove.y);
+            oldMousePosition = mousePosition;
+            mousePosition = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
+            mouseRect.setPosition(mousePosition);
             break;
 
         default:
@@ -260,8 +265,13 @@ void MainScreen::update(const sf::Time& dt) {
     for (auto& textboxe : textboxes)
         textboxe.update();
 
-    if (brushMode && pressed)
-        brush();
+    if (pressed) {
+        if (brushMode) {
+            brush();
+        } else if (selectedParticle != nullptr) {
+            selectedParticle->setPosition(mouseRect.getPosition());
+        }
+    }
 
     if (!pause) {
         moveObjects(dt);
@@ -320,6 +330,9 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 
     for (const auto& button : buttons)
         target.draw(button);
+
+    if (selectedParticle != nullptr)
+        selectedParticle->setColor(sf::Color::Yellow);
 }
 
 void MainScreen::moveObjects(const sf::Time& dt) {
@@ -336,14 +349,13 @@ void MainScreen::initializeObjects() {
 }
 
 void MainScreen::brush() {
-    int xPos = sf::Mouse::getPosition(stateManager->getWindow()).x;
-    int yPos = sf::Mouse::getPosition(stateManager->getWindow()).y;
-
-    if (xPos > boundary.left + boundary.width || xPos < boundary.left ||
-        yPos > boundary.top + boundary.height || yPos < boundary.top)
+    if (mousePosition.x > boundary.left + boundary.width ||
+        mousePosition.x < boundary.left ||
+        mousePosition.y > boundary.top + boundary.height ||
+        mousePosition.y < boundary.top)
         return;
 
-    addParticle(sf::Vector2f(xPos, yPos));
+    addParticle(sf::Vector2f(mousePosition.x, mousePosition.y));
     objectNum++;
     textboxes[0].setString(std::to_string(objectNum));
 }
@@ -355,6 +367,21 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
     myObjects.back()->setVelocity(
         sf::Vector2f((rand() % (int)particleSpeed - (particleSpeed) / 2),
                      (rand() % (int)particleSpeed - (particleSpeed) / 2)));
+}
+
+void MainScreen::selectParticle() {
+    std::cout << "Selecting" << std::endl;
+    sf::FloatRect mouseRect =
+        sf::FloatRect(mousePosition.x, mousePosition.y, 0, 0);
+    std::cout << "mousePos" << mouseRect.left << " " << mouseRect.top
+              << std::endl;
+    quadTree->query(mouseRect, myCollisions);
+    if (!myCollisions.empty()) {
+        std::cout << "Selected" << std::endl;
+        selectedParticle = myCollisions[0];
+        selectedParticle->setVelocity(sf::Vector2f(0, 0));
+        myCollisions.clear();
+    }
 }
 
 void MainScreen::resize(const sf::Event& event) {
