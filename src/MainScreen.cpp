@@ -216,7 +216,8 @@ void MainScreen::processEvent(const sf::Event& event) {
         case sf::Event::MouseButtonReleased:
             if (event.mouseButton.button == sf::Mouse::Left)
                 pressed = false;
-            selectedParticle = nullptr;
+            if (selectedParticle != nullptr)
+                releaseParticle = true;
             break;
 
         case sf::Event::KeyPressed:
@@ -271,6 +272,14 @@ void MainScreen::update(const sf::Time& dt) {
         } else if (selectedParticle != nullptr) {
             selectedParticle->setPosition(mouseRect.getPosition());
         }
+    } else if (releaseParticle) {
+        releaseParticle = false;
+        sf::Vector2f velocity =
+            sf::Vector2f(mousePosition.x - oldMousePosition.x,
+                         mousePosition.y - oldMousePosition.y);
+        velocity /= dt.asSeconds();
+        selectedParticle->setVelocity(velocity);
+        selectedParticle = nullptr;
     }
 
     if (!pause) {
@@ -370,14 +379,11 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
 }
 
 void MainScreen::selectParticle() {
-    std::cout << "Selecting" << std::endl;
-    sf::FloatRect mouseRect =
-        sf::FloatRect(mousePosition.x, mousePosition.y, 0, 0);
-    std::cout << "mousePos" << mouseRect.left << " " << mouseRect.top
-              << std::endl;
+    sf::FloatRect mouseRect = sf::FloatRect(
+        mousePosition.x, mousePosition.y, 0.1,
+        0.1);  // TODO trouver solution moins ratchet qu'un petit rectangle
     quadTree->query(mouseRect, myCollisions);
     if (!myCollisions.empty()) {
-        std::cout << "Selected" << std::endl;
         selectedParticle = myCollisions[0];
         selectedParticle->setVelocity(sf::Vector2f(0, 0));
         myCollisions.clear();

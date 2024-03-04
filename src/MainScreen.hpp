@@ -25,7 +25,13 @@ class MainScreen : public State {
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
    private:
-    bool pause, brushMode, pressed, showQuadTree, showMouseRect = false;
+    bool pause = false;
+    bool brushMode = false;
+    bool pressed = false;
+    bool showQuadTree = false;
+    bool showMouseRect = false;
+    bool releaseParticle = false;
+
     float particleSpeed = 100.f;
     Particle* selectedParticle = nullptr;
     sf::RectangleShape mouseRect;
