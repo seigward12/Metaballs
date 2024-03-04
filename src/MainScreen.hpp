@@ -28,6 +28,7 @@ class MainScreen : public State {
     bool showQuadTree = false;
     bool showMouseRect = false;
     float particleSpeed = 100.f;
+    Particle* selectedParticle = nullptr;
 
     std::unique_ptr<QuadTree<Particle>> quadTree;
     sf::FloatRect boundary;

@@ -38,25 +38,11 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
         labels.emplace_back();
         labels[i].setFont(font);
-
-        switch (i) {
-            case 0:
-                labels[i].setString("Object Num:  ");
-                break;
-            case 1:
-                labels[i].setString("Radius:  ");
-                break;
-            case 2:
-                labels[i].setString("Speed:  ");
-                break;
-            case 3:
-                labels[i].setString("Node Capacity:  ");
-                break;
-            default:
-                labels[i].setString("Label");
-                break;
-        }
     }
+    labels[0].setString("Object Num:  ");
+    labels[1].setString("Radius:  ");
+    labels[2].setString("Speed:  ");
+    labels[3].setString("Node Capacity:  ");
 
     for (int i = 0; i < 6; i++)
         buttons.emplace_back(font);
@@ -290,9 +276,6 @@ void MainScreen::update(const sf::Time& dt) {
     }
 
     for (auto& myObject : myObjects) {
-        // if (myObject->getColor() == collisionColor)
-        //     continue;
-
         quadTree->query(myObject->getGlobalBounds(), myCollisions);
 
         for (const auto& myCollision : myCollisions) {
