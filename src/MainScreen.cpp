@@ -375,6 +375,21 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
                      (rand() % (int)particleSpeed - (particleSpeed) / 2)));
     if (particles.back()->getRadius() > highestRadius)
         highestRadius = particles.back()->getRadius();
+
+    std::cout << "Particle added" << std::endl;
+    std::cout << "mouse pos" << mousePosition.x << " " << mousePosition.y
+              << std::endl;
+    std::cout << "positionX: " << particles.back()->getCenterPosition().x << " "
+              << "positionY: " << particles.back()->getCenterPosition().y << std::endl
+              << "radius: " << particles.back()->getRadius() << std::endl
+              << "dimentionX: " << particles.back()->getGlobalBounds().left
+              << " "
+              << "dimentonY: " << particles.back()->getGlobalBounds().top
+              << std::endl
+              << "width: " << particles.back()->getGlobalBounds().width << " "
+              << "height: " << particles.back()->getGlobalBounds().height
+              << std::endl
+              << std::endl;
 }
 
 void MainScreen::selectParticle() {
@@ -387,7 +402,7 @@ void MainScreen::selectParticle() {
     if (!myCollisions.empty()) {
         float minDistanceSquare = highestRadius * highestRadius;
         for (Particle* particle : myCollisions) {
-            sf::Vector2f distance = particle->getPosition() - mousePosition;
+            sf::Vector2f distance = particle->getCenterPosition() - mousePosition;
             float distanceSquare =
                 distance.x * distance.x + distance.y * distance.y;
             if (distanceSquare <=
@@ -416,13 +431,13 @@ void MainScreen::resize(const sf::Vector2f& dimensions) {
     quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 
     for (auto& myObject : particles) {
-        if (myObject->getPosition().x > boundary.width)
+        if (myObject->getCenterPosition().x > boundary.width)
             myObject->setPosition(
-                sf::Vector2f(boundary.width, myObject->getPosition().y));
+                sf::Vector2f(boundary.width, myObject->getCenterPosition().y));
 
-        if (myObject->getPosition().y > boundary.height)
+        if (myObject->getCenterPosition().y > boundary.height)
             myObject->setPosition(
-                sf::Vector2f(myObject->getPosition().x, boundary.height));
+                sf::Vector2f(myObject->getCenterPosition().x, boundary.height));
     }
 
     init();

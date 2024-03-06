@@ -15,7 +15,8 @@ class Particle : public sf::Drawable {
     void setRadius(float radius);
     void setColor(sf::Color color);
 
-    sf::Vector2f getPosition() const;  // Returns the center of the particle
+    sf::Vector2f getCenterPosition()
+        const;  // Returns the center of the particle
     sf::FloatRect getGlobalBounds() const;
     sf::Vector2f getVelocity() const;
     float getRadius() const;

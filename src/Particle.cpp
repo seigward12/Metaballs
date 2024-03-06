@@ -2,8 +2,8 @@
 
 Particle::Particle(const float radius) {
     id = count++;
+    shape = sf::CircleShape(radius);
     shape.setPosition(0, 0);
-    shape.setRadius(radius);
     shape.setFillColor(sf::Color::White);
     velocity = sf::Vector2f(0, 0);
 }
@@ -59,7 +59,7 @@ void Particle::setColor(const sf::Color color) {
     shape.setFillColor(color);
 }
 
-sf::Vector2f Particle::getPosition() const {
+sf::Vector2f Particle::getCenterPosition() const {
     return shape.getPosition() +
            sf::Vector2f(shape.getRadius(), shape.getRadius());
 }
@@ -81,7 +81,9 @@ sf::CircleShape Particle::getShape() const {
 }
 
 sf::FloatRect Particle::getGlobalBounds() const {
-    return shape.getGlobalBounds();
+    return sf::FloatRect(
+        shape.getPosition(),
+        sf::Vector2f(shape.getRadius() * 2, shape.getRadius() * 2));
 }
 
 bool Particle::operator==(const Particle& other) const {
