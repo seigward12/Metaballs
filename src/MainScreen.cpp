@@ -211,10 +211,10 @@ void MainScreen::processEvent(const sf::Event& event) {
             break;
 
         case sf::Event::MouseButtonReleased:
-            if (event.mouseButton.button == sf::Mouse::Left)
+            if (event.mouseButton.button == sf::Mouse::Left) {
                 pressed = false;
-            if (selectedParticle != nullptr)
-                releaseParticle = true;
+                selectedParticle = nullptr;
+            }
             break;
 
         case sf::Event::KeyPressed:
@@ -241,9 +241,7 @@ void MainScreen::processEvent(const sf::Event& event) {
             break;
 
         case sf::Event::MouseMoved:
-            oldMousePosition = mousePosition;
             mousePosition = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
-            mouseRect.setPosition(mousePosition);
             break;
 
         default:
@@ -267,16 +265,12 @@ void MainScreen::update(const sf::Time& dt) {
         if (brushMode) {
             brush();
         } else if (selectedParticle != nullptr) {
-            selectedParticle->setPosition(mouseRect.getPosition());
+            sf::Vector2f velocity =
+                sf::Vector2f(mousePosition.x - oldMousePosition.x,
+                             mousePosition.y - oldMousePosition.y);
+            velocity /= dt.asSeconds();
+            selectedParticle->setVelocity(velocity);
         }
-    } else if (releaseParticle) {
-        releaseParticle = false;
-        sf::Vector2f velocity =
-            sf::Vector2f(mousePosition.x - oldMousePosition.x,
-                         mousePosition.y - oldMousePosition.y);
-        velocity /= dt.asSeconds();
-        selectedParticle->setVelocity(velocity);
-        selectedParticle = nullptr;
     }
 
     if (!pause) {
@@ -285,6 +279,8 @@ void MainScreen::update(const sf::Time& dt) {
         for (auto& myObject : myObjects) {
             quadTree->insert(myObject.get());
         }
+    } else if (selectedParticle != nullptr) {
+        selectedParticle->setPosition(mousePosition);
     }
 
     for (auto& myObject : myObjects) {
@@ -308,6 +304,7 @@ void MainScreen::update(const sf::Time& dt) {
     }
 
     if (showMouseRect) {
+        mouseRect.setPosition(mousePosition);
         quadTree->query(mouseRect.getGlobalBounds(), myCollisions);
 
         for (const auto& myCollision : myCollisions)
@@ -318,6 +315,8 @@ void MainScreen::update(const sf::Time& dt) {
 
     if (selectedParticle != nullptr)
         selectedParticle->setColor(sf::Color::Yellow);
+
+    oldMousePosition = mousePosition;
 }
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -399,8 +398,10 @@ void MainScreen::selectParticle() {
                 selectedParticle = particle;
             }
         }
-        if (selectedParticle != nullptr)
+        if (selectedParticle != nullptr) {
             selectedParticle->setVelocity(sf::Vector2f(0, 0));
+            selectedParticle->setPosition(mousePosition);
+        }
         myCollisions.clear();
     }
 }

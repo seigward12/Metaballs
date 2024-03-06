@@ -99,3 +99,5 @@ bool Particle::isColliding(const Particle& other) const {
     return (distanceX * distanceX) + (distanceY * distanceY) <=
            (minDistance * minDistance);
 }
+
+void collideWithParticle(Particle& other) {}

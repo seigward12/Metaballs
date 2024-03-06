@@ -30,7 +30,6 @@ class MainScreen : public State {
     bool pressed = false;
     bool showQuadTree = false;
     bool showMouseRect = false;
-    bool releaseParticle = false;
     bool collisionEnabled = false;
 
     float particleSpeed = 100.f;

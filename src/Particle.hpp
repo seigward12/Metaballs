@@ -8,6 +8,7 @@ class Particle : public sf::Drawable {
 
     void update(const sf::Time& dt, sf::FloatRect boundary);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    void collideWithParticle(Particle& other);
 
     void setPosition(sf::Vector2f position);
     void setVelocity(sf::Vector2f velocity);
