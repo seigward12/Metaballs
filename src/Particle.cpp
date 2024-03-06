@@ -3,7 +3,7 @@
 Particle::Particle(const float radius) {
     id = count++;
     shape = sf::CircleShape(radius);
-    shape.setPosition(0, 0);
+    setPosition(sf::Vector2f(0, 0));
     shape.setFillColor(sf::Color::White);
     velocity = sf::Vector2f(0, 0);
 }
@@ -95,10 +95,10 @@ bool Particle::operator!=(const Particle& other) const {
 }
 
 bool Particle::isColliding(const Particle& other) const {
-    const float distanceX = shape.getPosition().x - other.shape.getPosition().x;
-    const float distanceY = shape.getPosition().y - other.shape.getPosition().y;
+    const sf::Vector2f distance =
+        getCenterPosition() - other.getCenterPosition();
     const float minDistance = this->getRadius() + other.getRadius();
-    return (distanceX * distanceX) + (distanceY * distanceY) <=
+    return (distance.x * distance.x) + (distance.y * distance.y) <=
            (minDistance * minDistance);
 }
 

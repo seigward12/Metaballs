@@ -113,7 +113,7 @@ void QuadTree<DataType>::subdivide() {
 
 template <class DataType>
 bool QuadTree<DataType>::insert(DataType* object) {
-    sf::Vector2f position = object->getPosition();
+    sf::Vector2f position = object->getCenterPosition();
     if (boundary.top > position.y || boundary.left > position.x ||
         boundary.top + boundary.height < position.y ||
         boundary.left + boundary.width < position.x)

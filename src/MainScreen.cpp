@@ -375,21 +375,6 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
                      (rand() % (int)particleSpeed - (particleSpeed) / 2)));
     if (particles.back()->getRadius() > highestRadius)
         highestRadius = particles.back()->getRadius();
-
-    std::cout << "Particle added" << std::endl;
-    std::cout << "mouse pos" << mousePosition.x << " " << mousePosition.y
-              << std::endl;
-    std::cout << "positionX: " << particles.back()->getCenterPosition().x << " "
-              << "positionY: " << particles.back()->getCenterPosition().y << std::endl
-              << "radius: " << particles.back()->getRadius() << std::endl
-              << "dimentionX: " << particles.back()->getGlobalBounds().left
-              << " "
-              << "dimentonY: " << particles.back()->getGlobalBounds().top
-              << std::endl
-              << "width: " << particles.back()->getGlobalBounds().width << " "
-              << "height: " << particles.back()->getGlobalBounds().height
-              << std::endl
-              << std::endl;
 }
 
 void MainScreen::selectParticle() {
@@ -402,7 +387,8 @@ void MainScreen::selectParticle() {
     if (!myCollisions.empty()) {
         float minDistanceSquare = highestRadius * highestRadius;
         for (Particle* particle : myCollisions) {
-            sf::Vector2f distance = particle->getCenterPosition() - mousePosition;
+            sf::Vector2f distance =
+                particle->getCenterPosition() - mousePosition;
             float distanceSquare =
                 distance.x * distance.x + distance.y * distance.y;
             if (distanceSquare <=
