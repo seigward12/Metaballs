@@ -100,7 +100,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     });
 
     buttons[4].setOnAction([&]() {
-        for (auto& myObject : myObjects)
+        for (auto& myObject : particles)
             myObject->setPosition(
                 sf::Vector2f((rand() % static_cast<int>(boundary.width)),
                              ((rand() % static_cast<int>(boundary.height)))));
@@ -275,27 +275,25 @@ void MainScreen::update(const sf::Time& dt) {
 
     if (!pause) {
         moveObjects(dt);
-        quadTree->reset();
-        for (auto& myObject : myObjects) {
-            quadTree->insert(myObject.get());
-        }
     } else if (selectedParticle != nullptr) {
         selectedParticle->setPosition(mousePosition);
     }
 
-    for (auto& myObject : myObjects) {
-        myObject->setColor(defaultColor);
+    quadTree->reset();
+    for (auto& particle : particles) {
+        quadTree->insert(particle.get());
+        particle->setColor(defaultColor);
     }
 
-    for (auto& myObject : myObjects) {
-        quadTree->query(myObject->getGlobalBounds(), myCollisions);
+    for (auto& particle : particles) {
+        quadTree->query(particle->getGlobalBounds(), myCollisions);
 
         for (const auto& myCollision : myCollisions) {
-            if (myObject.get() == myCollision)
+            if (particle.get() == myCollision)
                 continue;
 
-            if (myObject->isColliding(*myCollision)) {
-                myObject->setColor(collisionColor);
+            if (particle->isColliding(*myCollision)) {
+                particle->setColor(collisionColor);
                 myCollision->setColor(collisionColor);
             }
         }
@@ -323,7 +321,7 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     if (showQuadTree)
         target.draw(*quadTree);
 
-    for (auto& myObject : myObjects)
+    for (auto& myObject : particles)
         target.draw(*myObject);
 
     if (showMouseRect)
@@ -344,12 +342,12 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 }
 
 void MainScreen::moveObjects(const sf::Time& dt) {
-    for (auto& myObject : myObjects)
+    for (auto& myObject : particles)
         myObject->update(dt, boundary);
 }
 
 void MainScreen::initializeObjects() {
-    myObjects.clear();
+    particles.clear();
     for (unsigned short i = 0; i < objectNum; i++) {
         addParticle(sf::Vector2f((rand() % (int)boundary.width),
                                  ((rand() % (int)boundary.height))));
@@ -369,14 +367,14 @@ void MainScreen::brush() {
 }
 
 void MainScreen::addParticle(const sf::Vector2f& position) {
-    myObjects.push_back(
+    particles.push_back(
         std::make_unique<Particle>((radius / 2) + rand() % (int)radius));
-    myObjects.back()->setPosition(position);
-    myObjects.back()->setVelocity(
+    particles.back()->setPosition(position);
+    particles.back()->setVelocity(
         sf::Vector2f((rand() % (int)particleSpeed - (particleSpeed) / 2),
                      (rand() % (int)particleSpeed - (particleSpeed) / 2)));
-    if (myObjects.back()->getRadius() > highestRadius)
-        highestRadius = myObjects.back()->getRadius();
+    if (particles.back()->getRadius() > highestRadius)
+        highestRadius = particles.back()->getRadius();
 }
 
 void MainScreen::selectParticle() {
@@ -417,7 +415,7 @@ void MainScreen::resize(const sf::Event& event) {
                              stateManager->height - 20);
     quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 
-    for (auto& myObject : myObjects) {
+    for (auto& myObject : particles) {
         if (myObject->getPosition().x > boundary.width)
             myObject->setPosition(
                 sf::Vector2f(boundary.width, myObject->getPosition().y));

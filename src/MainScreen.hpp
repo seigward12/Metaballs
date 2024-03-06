@@ -42,7 +42,7 @@ class MainScreen : public State {
     sf::FloatRect boundary;
     unsigned short treeNodeCapacity;
 
-    std::vector<std::unique_ptr<Particle>> myObjects;
+    std::vector<std::unique_ptr<Particle>> particles;
     std::vector<Particle*> myCollisions;
 
     unsigned short objectNum;
