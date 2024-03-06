@@ -237,7 +237,7 @@ void MainScreen::processEvent(const sf::Event& event) {
             break;
 
         case sf::Event::Resized:
-            resize(event);
+            resize(sf::Vector2f(event.size.width, event.size.height));
             break;
 
         case sf::Event::MouseMoved:
@@ -404,13 +404,13 @@ void MainScreen::selectParticle() {
     }
 }
 
-void MainScreen::resize(const sf::Event& event) {
+void MainScreen::resize(const sf::Vector2f& dimensions) {
     const sf::FloatRect visibleArea =
-        sf::FloatRect(0, 0, event.size.width, event.size.height);
+        sf::FloatRect(0, 0, dimensions.x, dimensions.y);
     stateManager->setView(sf::View(visibleArea));
 
-    stateManager->width = event.size.width;
-    stateManager->height = event.size.height;
+    stateManager->width = dimensions.x;
+    stateManager->height = dimensions.y;
     boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
                              stateManager->height - 20);
     quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);

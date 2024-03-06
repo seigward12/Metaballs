@@ -62,7 +62,7 @@ class MainScreen : public State {
     void moveObjects(const sf::Time& dt);
     void addParticle(const sf::Vector2f& position);
     void brush();
-    void resize(const sf::Event& event);
+    void resize(const sf::Vector2f& dimensions);
     void updateSelectedParticle(const sf::Vector2f& position);
     void selectParticle();
 };
