@@ -20,7 +20,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
         sf::Vector2f(stateManager->height / 3.f, stateManager->height / 3.f));
     mouseRect.setFillColor(sf::Color::Transparent);
     mouseRect.setOutlineThickness(2);
-    mouseRect.setOutlineColor(mouseRectColor);
+    mouseRect.setOutlineColor(MOUSE_RECT_COLOR);
     const sf::FloatRect temp = mouseRect.getGlobalBounds();
     mouseRect.setOrigin(temp.left + temp.width / 2, temp.top + temp.height / 2);
 
@@ -213,7 +213,10 @@ void MainScreen::processEvent(const sf::Event& event) {
         case sf::Event::MouseButtonReleased:
             if (event.mouseButton.button == sf::Mouse::Left) {
                 pressed = false;
-                selectedParticle = nullptr;
+                if (selectedParticle != nullptr) {
+                    selectedParticle->setInfiniteMass(false);
+                    selectedParticle = nullptr;
+                }
             }
             break;
 
@@ -282,19 +285,23 @@ void MainScreen::update(const sf::Time& dt) {
     quadTree->reset();
     for (auto& particle : particles) {
         quadTree->insert(particle.get());
-        particle->setColor(defaultColor);
+        particle->setColor(DEFAULT_COLOR);
     }
 
     for (auto& particle : particles) {
         quadTree->query(particle->getGlobalBounds(), myCollisions);
 
-        for (const auto& myCollision : myCollisions) {
+        for (Particle* myCollision : myCollisions) {
             if (particle.get() == myCollision)
                 continue;
 
-            if (particle->isColliding(*myCollision)) {
-                particle->setColor(collisionColor);
-                myCollision->setColor(collisionColor);
+            if (collisionEnabled && !pause) {
+                particle->collideWithParticle(*myCollision);
+            } else {
+                if (particle->isColliding(*myCollision)) {
+                    particle->setColor(COLLISION_COLOR);
+                    myCollision->setColor(COLLISION_COLOR);
+                }
             }
         }
 
@@ -306,7 +313,7 @@ void MainScreen::update(const sf::Time& dt) {
         quadTree->query(mouseRect.getGlobalBounds(), myCollisions);
 
         for (const auto& myCollision : myCollisions)
-            myCollision->setColor(mouseRectColor);
+            myCollision->setColor(MOUSE_RECT_COLOR);
 
         myCollisions.clear();
     }
@@ -400,6 +407,7 @@ void MainScreen::selectParticle() {
         if (selectedParticle != nullptr) {
             selectedParticle->setVelocity(sf::Vector2f(0, 0));
             selectedParticle->setPosition(mousePosition);
+            selectedParticle->setInfiniteMass(true);
         }
         myCollisions.clear();
     }

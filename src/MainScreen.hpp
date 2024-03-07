@@ -11,10 +11,10 @@
 #include "StateManager.hpp"
 #include "TextBox.hpp"
 
-const sf::Color defaultColor = sf::Color(0, 255, 0, 255);
-const sf::Color collisionColor = sf::Color(255, 0, 0, 255);
-const sf::Color mouseRectColor = sf::Color::Magenta;
-const sf::Color quadTreeColor = sf::Color::White;
+const sf::Color DEFAULT_COLOR = sf::Color(0, 255, 0, 255);
+const sf::Color COLLISION_COLOR = sf::Color(255, 0, 0, 255);
+const sf::Color MOUSE_RECT_COLOR = sf::Color::Magenta;
+const sf::Color QUAD_TREE_COLOR = sf::Color::White;
 
 class MainScreen : public State {
    public:

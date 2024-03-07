@@ -1,8 +1,11 @@
 #include "Particle.hpp"
 
+#include <iostream>  //TODO remove
+
 Particle::Particle(const float radius) {
     id = count++;
     shape = sf::CircleShape(radius);
+    setRadius(radius);
     setPosition(sf::Vector2f(0, 0));
     shape.setFillColor(sf::Color::White);
     velocity = sf::Vector2f(0, 0);
@@ -112,10 +115,27 @@ void Particle::collideWithParticle(const Particle& other) {
     if (isColliding(other)) {
         sf::Vector2f normale = getCenterPosition() - other.getCenterPosition();
         normale = normale / sqrt(normale.x * normale.x + normale.y * normale.y);
+        std::cout << "collision normale: " << normale.x << " " << normale.y
+                  << std::endl;
+
         const sf::Vector2f relativeVelocity =
             getVelocity() - other.getVelocity();
+        std::cout << "collision relative velocity: " << relativeVelocity.x
+                  << " " << relativeVelocity.y << std::endl;
 
         const float vrMinus =
             normale.x * relativeVelocity.x + normale.y * relativeVelocity.y;
+        std::cout << "collision vrMinus: " << vrMinus << std::endl;
+
+        const float j =
+            -2 * vrMinus *
+            (1 / (massInverse + other.massInverse));  // 2 parce que coeficient
+        // de restitution = 1
+        std::cout << "collision j: " << j << std::endl;
+
+        velocity = velocity + j * normale * massInverse;
+        std::cout << "collision velocity: " << velocity.x << " " << velocity.y
+                  << std::endl
+                  << std::endl;
     }
 }
