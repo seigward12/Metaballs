@@ -61,7 +61,9 @@ void Particle::setRadius(const float radius) {
 
 void Particle::setInfiniteMass(bool isInfiniteMass) {
     massInverse =
-        isInfiniteMass ? 0.0 : 1 / (shape.getRadius() * shape.getRadius());
+        isInfiniteMass
+            ? 0.0
+            : 1 / (shape.getRadius() * shape.getRadius() * shape.getRadius());
 }
 
 void Particle::setColor(const sf::Color color) {
@@ -126,7 +128,7 @@ void Particle::collideWithParticle(Particle& other,
 
         const float massInverseTotal = massInverse + other.massInverse;
         const float j =
-            -(1 + restitutionCoefficient) / 2 * vrMinus / massInverseTotal;
+            -(1 + restitutionCoefficient) * vrMinus / massInverseTotal;
 
         velocity = velocity + j * normal * massInverse;
         other.velocity = other.velocity - j * normal * other.massInverse;
