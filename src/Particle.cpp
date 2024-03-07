@@ -12,7 +12,7 @@ Particle::~Particle() {
     count--;
 }
 
-void Particle::update(const sf::Time& dt, const sf::FloatRect boundary) {
+void Particle::update(const sf::Time& dt, const sf::FloatRect& boundary) {
     if (shape.getPosition().x < boundary.left) {
         velocity.x *= -1;
         shape.setPosition(boundary.left, shape.getPosition().y);
@@ -53,6 +53,12 @@ void Particle::setVelocity(const sf::Vector2f velocity) {
 
 void Particle::setRadius(const float radius) {
     shape.setRadius(radius);
+    massInverse = 1 / (radius * radius);
+}
+
+void Particle::setInfiniteMass(bool isInfiniteMass) {
+    massInverse =
+        isInfiniteMass ? 0.0 : 1 / (shape.getRadius() * shape.getRadius());
 }
 
 void Particle::setColor(const sf::Color color) {
@@ -102,4 +108,14 @@ bool Particle::isColliding(const Particle& other) const {
            (minDistance * minDistance);
 }
 
-void collideWithParticle(Particle& other) {}
+void Particle::collideWithParticle(const Particle& other) {
+    if (isColliding(other)) {
+        sf::Vector2f normale = getCenterPosition() - other.getCenterPosition();
+        normale = normale / sqrt(normale.x * normale.x + normale.y * normale.y);
+        const sf::Vector2f relativeVelocity =
+            getVelocity() - other.getVelocity();
+
+        const float vrMinus =
+            normale.x * relativeVelocity.x + normale.y * relativeVelocity.y;
+    }
+}

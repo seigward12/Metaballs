@@ -6,14 +6,15 @@ class Particle : public sf::Drawable {
     explicit Particle(float radius);
     ~Particle();
 
-    void update(const sf::Time& dt, sf::FloatRect boundary);
+    void update(const sf::Time& dt, const sf::FloatRect& boundary);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-    void collideWithParticle(Particle& other);
+    void collideWithParticle(const Particle& other);
 
     void setPosition(sf::Vector2f position);
     void setVelocity(sf::Vector2f velocity);
     void setRadius(float radius);
     void setColor(sf::Color color);
+    void setInfiniteMass(bool isInfiniteMass);
 
     sf::Vector2f getCenterPosition() const;
     sf::FloatRect getGlobalBounds() const;
@@ -30,6 +31,7 @@ class Particle : public sf::Drawable {
    private:
     sf::CircleShape shape;
     sf::Vector2f velocity;
+    float massInverse;
 
     inline static unsigned short count = 0;
     unsigned short id;
