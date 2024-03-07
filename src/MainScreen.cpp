@@ -99,12 +99,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
             showQuadTree ? sf::Color(100, 100, 100, 150) : sf::Color::Black);
     });
 
-    buttons[4].setOnAction([&]() {
-        for (auto& myObject : particles)
-            myObject->setPosition(
-                sf::Vector2f((rand() % static_cast<int>(boundary.width)),
-                             ((rand() % static_cast<int>(boundary.height)))));
-    });
+    buttons[4].setOnAction([&]() { initializeObjects(); });
 
     buttons[5].setOnAction([&]() {
         brushMode = !brushMode;

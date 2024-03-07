@@ -5,7 +5,7 @@
 Particle::Particle(const float radius) {
     id = count++;
     shape = sf::CircleShape(radius);
-    setRadius(radius);
+    setInfiniteMass(false);
     setPosition(sf::Vector2f(0, 0));
     shape.setFillColor(sf::Color::White);
     velocity = sf::Vector2f(0, 0);
@@ -111,31 +111,31 @@ bool Particle::isColliding(const Particle& other) const {
            (minDistance * minDistance);
 }
 
-void Particle::collideWithParticle(const Particle& other) {
+void Particle::collideWithParticle(Particle& other,
+                                   const float restitutionCoefficient) {
     if (isColliding(other)) {
-        sf::Vector2f normale = getCenterPosition() - other.getCenterPosition();
-        normale = normale / sqrt(normale.x * normale.x + normale.y * normale.y);
-        std::cout << "collision normale: " << normale.x << " " << normale.y
-                  << std::endl;
+        sf::Vector2f distance = getCenterPosition() - other.getCenterPosition();
+        sf::Vector2f normal =
+            distance / sqrt(distance.x * distance.x + distance.y * distance.y);
 
         const sf::Vector2f relativeVelocity =
             getVelocity() - other.getVelocity();
-        std::cout << "collision relative velocity: " << relativeVelocity.x
-                  << " " << relativeVelocity.y << std::endl;
 
         const float vrMinus =
-            normale.x * relativeVelocity.x + normale.y * relativeVelocity.y;
-        std::cout << "collision vrMinus: " << vrMinus << std::endl;
+            normal.x * relativeVelocity.x + normal.y * relativeVelocity.y;
 
+        const float massInverseTotal = massInverse + other.massInverse;
         const float j =
-            -2 * vrMinus *
-            (1 / (massInverse + other.massInverse));  // 2 parce que coeficient
-        // de restitution = 1
-        std::cout << "collision j: " << j << std::endl;
+            -(1 + restitutionCoefficient) / 2 * vrMinus / massInverseTotal;
 
-        velocity = velocity + j * normale * massInverse;
-        std::cout << "collision velocity: " << velocity.x << " " << velocity.y
-                  << std::endl
-                  << std::endl;
+        velocity = velocity + j * normal * massInverse;
+        other.velocity = other.velocity - j * normal * other.massInverse;
+
+        // avoid overlapping
+        const sf::Vector2f minDistance =
+            (this->getRadius() + other.getRadius()) * normal;
+        const sf::Vector2f repulsion = minDistance - distance;
+        shape.move(repulsion * (massInverse / massInverseTotal));
+        other.shape.move(-repulsion * (other.massInverse / massInverseTotal));
     }
 }
