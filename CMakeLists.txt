@@ -4,23 +4,31 @@ project(Metaballs LANGUAGES CXX)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
+### setting up interprocedural optimization not sure what it does
+include(CheckIPOSupported)
+check_ipo_supported(RESULT result)
+if(result)
+    message("setting interprocedural optimization")
+  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
+###
+
+
 include(FetchContent)
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML) 
 
-### bulding the executable and adding the source files
 
+### bulding the executable and adding the source files
 # To add all the source files autmatically (Not recommended by Cmake)
 # file(GLOB_RECURSE SOURCES_CPP CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 # file(GLOB_RECURSE SOURCES_HPP CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
 # add_executable(${PROJECT_NAME} ${SOURCES_CPP} ${SOURCES_HPP})
 add_executable(${PROJECT_NAME} src/main.cpp)
 add_subdirectory(src)
-
-### 
-
+###
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
     sfml-audio 
