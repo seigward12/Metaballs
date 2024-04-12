@@ -10,10 +10,16 @@ FetchContent_Declare(SFML
     GIT_TAG 2.6.x)
 FetchContent_MakeAvailable(SFML) 
 
+### bulding the executable and adding the source files
 
-file(GLOB_RECURSE SOURCES_CPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.cpp")
-file(GLOB_RECURSE SOURCES_HPP RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "src/*.hpp")
-add_executable(${PROJECT_NAME} ${SOURCES_CPP} ${SOURCES_HPP})
+# To add all the source files autmatically (Not recommended by Cmake)
+# file(GLOB_RECURSE SOURCES_CPP CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+# file(GLOB_RECURSE SOURCES_HPP CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
+# add_executable(${PROJECT_NAME} ${SOURCES_CPP} ${SOURCES_HPP})
+add_executable(${PROJECT_NAME} src/main.cpp)
+add_subdirectory(src)
+
+### 
 
 
 target_link_libraries(${PROJECT_NAME} PRIVATE 
