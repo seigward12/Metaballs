@@ -61,9 +61,7 @@ void Particle::setRadius(const float radius) {
 
 void Particle::setInfiniteMass(bool isInfiniteMass) {
     massInverse =
-        isInfiniteMass
-            ? 0.0
-            : 1 / (shape.getRadius() * shape.getRadius() * shape.getRadius());
+        isInfiniteMass ? 0.0 : 1 / (shape.getRadius() * shape.getRadius());
 }
 
 void Particle::setColor(const sf::Color color) {
