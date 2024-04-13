@@ -16,8 +16,6 @@ class QuadTree : public sf::Drawable {
     bool insert(DataType* object);
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     void query(sf::FloatRect range, std::vector<DataType*>& objectsFound);
-    // void queryCollision(const DataType* object,
-    //                     std::vector<DataType*>& objectsFound);
 
    private:
     unsigned short capacity;
@@ -25,8 +23,7 @@ class QuadTree : public sf::Drawable {
     std::unique_ptr<QuadTree> northWest, northEast, southWest,
         southEast = nullptr;
     std::vector<DataType*> objects{};
-    sf::VertexArray parentLines{sf::LineStrip, LINES_PER_NODE};
-    sf::VertexArray childLines{sf::LineStrip, LINES_PER_NODE};
+    sf::VertexArray boundaryLines{sf::LineStrip, LINES_PER_NODE};
     const sf::FloatRect boundary{};
 
     void subdivide();
@@ -36,21 +33,15 @@ template <class DataType>
 QuadTree<DataType>::QuadTree(const sf::FloatRect& boundary,
                              unsigned short capacity)
     : capacity(capacity), boundary(boundary) {
-    parentLines[0].position =
+    boundaryLines[0].position =
         boundary.getPosition() + sf::Vector2f(0.f, boundary.height);
-    parentLines[1].position = boundary.getPosition();
-    parentLines[2].position =
+    boundaryLines[1].position = boundary.getPosition();
+    boundaryLines[2].position =
         boundary.getPosition() + sf::Vector2f(boundary.width, 0.f);
-    childLines[0].position = parentLines[2].position;
-    childLines[1].position =
-        boundary.getPosition() + sf::Vector2f(boundary.width, boundary.height);
-    childLines[2].position =
-        boundary.getPosition() + sf::Vector2f(0.f, boundary.height);
 
     const sf::Color color = sf::Color::Yellow;
     for (int i = 0; i < LINES_PER_NODE; ++i) {
-        parentLines[i].color = color;
-        childLines[i].color = color;
+        boundaryLines[i].color = color;
     }
 }
 
@@ -69,19 +60,18 @@ void QuadTree<DataType>::reset() {
     // }
     divided = false;
     objects.clear();
+    boundaryLines[1].position = boundary.getPosition();
 }
 
 template <class DataType>
 void QuadTree<DataType>::draw(sf::RenderTarget& target,
                               sf::RenderStates states) const {
+    target.draw(boundaryLines);
     if (divided) {
-        target.draw(parentLines);
         target.draw(*northWest, states);
         target.draw(*northEast, states);
         target.draw(*southEast, states);
         target.draw(*southWest, states);
-    } else {
-        target.draw(childLines);
     }
 }
 
@@ -109,6 +99,8 @@ void QuadTree<DataType>::subdivide() {
         objects.pop_back();
         insert(object);
     }
+
+    boundaryLines[1].position += sf::Vector2f(boundary.width, boundary.height);
 }
 
 template <class DataType>
