@@ -65,3 +65,6 @@ add_custom_command(
 # add_dependencies(${PROJECT_NAME} copy_assets)
 
 install(TARGETS ${PROJECT_NAME})
+
+include(InstallRequiredSystemLibraries)
+include(CPack)
