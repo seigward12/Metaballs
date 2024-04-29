@@ -7,21 +7,41 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 ### setting up interprocedural optimization not sure what it does
-include(CheckIPOSupported)
-check_ipo_supported(RESULT result)
-if(result)
-    message("setting interprocedural optimization")
-  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-endif()
+# include(CheckIPOSupported)
+# check_ipo_supported(RESULT result)
+# if(result)
+#     message("setting interprocedural optimization")
+#   set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+# endif()
 ###
 
 
+### adding dependencies
+    # SFML
 include(FetchContent)
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
     GIT_TAG 2.6.x)
+set(SFML_BUILD_AUDIO FALSE)
+set(SFML_BUILD_NETWORK FALSE)
 FetchContent_MakeAvailable(SFML) 
 
+    # ImGui
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.90.5)
+FetchContent_MakeAvailable(imgui)
+
+    # ImGui-SFML
+FetchContent_Declare(
+  imgui-sfml
+  GIT_REPOSITORY https://github.com/SFML/imgui-sfml
+  GIT_TAG 2.6.x)
+set(IMGUI_DIR ${imgui_SOURCE_DIR})
+set(IMGUI_SFML_FIND_SFML OFF)
+FetchContent_MakeAvailable(imgui-sfml)
+###
 
 ### bulding the executable and adding the source files
 # To add all the source files autmatically (Not recommended by Cmake)
@@ -32,13 +52,14 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 add_subdirectory(src)
 ###
 
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-    sfml-audio 
-    sfml-graphics 
-    sfml-window 
-    sfml-network 
-    sfml-system
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE ImGui-SFML::ImGui-SFML)
+# target_link_libraries(${PROJECT_NAME} PRIVATE 
+#     # sfml-audio 
+#     sfml-graphics 
+#     sfml-window 
+#     # sfml-network 
+#     sfml-system
+# )
 
 if(WIN32)
     add_custom_command(
