@@ -38,7 +38,9 @@ FetchContent_Declare(
     SFGUI
     GIT_REPOSITORY https://github.com/TankOs/SFGUI.git
     GIT_TAG master)
-    set(SFGUI_SFML_FIND_SFML OFF)
+set(SFGUI_BUILD_EXAMPLES OFF)
+set(SFGUI_BUILD_SHARED_LIBS OFF)
+set(SFML_STATIC_LIBRARIES OFF)
 FetchContent_MakeAvailable(SFGUI)
 ###
 
@@ -59,31 +61,18 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     # sfml-network 
     sfml-system
 )
-
-
-
-    # SFGUI
-# FetchContent_Declare(
-#     SFGUI
-#     GIT_REPOSITORY https://github.com/TankOs/SFGUI.git
-#     GIT_TAG master)
-#     set(SFGUI_SFML_FIND_SFML OFF)
-# FetchContent_MakeAvailable(SFGUI)
 target_link_libraries(${PROJECT_NAME} PRIVATE SFGUI::SFGUI)
 
 if(WIN32)
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        COMMENT "Copy OpenAL DLL"
-        PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SFML_SOURCE_DIR}/extlibs/bin/$<IF:$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>,x64,x86>/openal32.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
-        VERBATIM)
+    if(SFML_BUILD_AUDIO)
+        add_custom_command(
+            TARGET ${PROJECT_NAME}
+            COMMENT "Copy OpenAL DLL"
+            PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SFML_SOURCE_DIR}/extlibs/bin/$<IF:$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>,x64,x86>/openal32.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            VERBATIM)
+    endif()
 endif()
 
-
-# if(NOT CMAKE_BUILD_TYPE)
-#   set(CMAKE_BUILD_TYPE Release)
-# endif()
-# file(COPY src/assets DESTINATION ${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE})
 
 add_custom_command(
         TARGET ${PROJECT_NAME}
@@ -91,7 +80,8 @@ add_custom_command(
         ${PROJECT_SOURCE_DIR}/src/assets
         $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
         COMMENT "Copying assets into binary directory ${PROJECT_BINARY_DIR}"
-        )
+)
+install(DIRECTORY src/assets TYPE BIN)
 
 
 install(TARGETS ${PROJECT_NAME})
