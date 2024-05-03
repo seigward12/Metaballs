@@ -1,11 +1,9 @@
 #include "Particle.hpp"
-
-#include <iostream>  //TODO remove
+#include <cmath>
 
 Particle::Particle(const float radius) {
     id = count++;
-    shape = sf::CircleShape(radius);
-    setInfiniteMass(false);
+    setRadius(radius);
     setPosition(sf::Vector2f(0, 0));
     shape.setFillColor(sf::Color::White);
     velocity = sf::Vector2f(0, 0);
@@ -56,6 +54,7 @@ void Particle::setVelocity(const sf::Vector2f velocity) {
 
 void Particle::setRadius(const float radius) {
     shape.setRadius(radius);
+    shape.setPointCount(std::max(static_cast<int>(std::sqrt(radius) * 4.), 3));
     massInverse = 1 / (radius * radius);
 }
 

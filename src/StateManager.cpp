@@ -10,6 +10,7 @@ StateManager::StateManager(float width, float height)
       height{height} {
     window.setKeyRepeatEnabled(false);
     window.setFramerateLimit(144);  // TODO
+    gui.setWindow(window);
 }
 
 StateManager::~StateManager() {
@@ -48,6 +49,7 @@ void StateManager::run() {
 
         window.clear();
         window.draw(*state);
+        gui.draw();
         window.display();
     }
 }
@@ -55,6 +57,7 @@ void StateManager::run() {
 void StateManager::processEvents() {
     sf::Event event;
     while (window.pollEvent(event)) {
+        gui.handleEvent(event);
         state->processEvent(event);
         if (event.type == sf::Event::Closed)
             window.close();

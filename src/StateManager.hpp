@@ -1,4 +1,5 @@
 #pragma once
+#include <TGUI/Backend/SFML-Graphics.hpp>
 #include <sfml/Graphics.hpp>
 #include "State.hpp"
 
@@ -31,4 +32,6 @@ class StateManager {
     void quit();
     void run();
     float width, height;
+
+    tgui::Gui gui;
 };
