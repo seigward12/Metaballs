@@ -15,33 +15,18 @@ FetchContent_Declare(
     GIT_TAG 2.6.x)
 set(SFML_BUILD_AUDIO FALSE)
 set(SFML_BUILD_NETWORK FALSE)
+set(SFML_BUILD_EXAMPLES FALSE)
 FetchContent_MakeAvailable(SFML) 
 
-    # ImGui
-# FetchContent_Declare(
-#     imgui
-#     GIT_REPOSITORY https://github.com/ocornut/imgui.git
-#     GIT_TAG v1.90.5)
-# FetchContent_MakeAvailable(imgui)
-
-#     # ImGui-SFML
-# FetchContent_Declare(
-#   imgui-sfml
-#   GIT_REPOSITORY https://github.com/SFML/imgui-sfml
-#   GIT_TAG 2.6.x)
-# set(IMGUI_DIR ${imgui_SOURCE_DIR})
-# set(IMGUI_SFML_FIND_SFML OFF)
-# FetchContent_MakeAvailable(imgui-sfml)
-
-    # SFGUI
+    # TGUI
 FetchContent_Declare(
-    SFGUI
-    GIT_REPOSITORY https://github.com/TankOs/SFGUI.git
-    GIT_TAG master)
-set(SFGUI_BUILD_EXAMPLES OFF)
-set(SFGUI_BUILD_SHARED_LIBS OFF)
-set(SFML_STATIC_LIBRARIES OFF)
-FetchContent_MakeAvailable(SFGUI)
+    TGUI
+    GIT_REPOSITORY https://github.com/texus/TGUI.git
+    GIT_TAG 1.x)
+set(TGUI_BACKEND SFML_GRAPHICS)
+set(TGUI_BUILD_EXAMPLES OFF)
+set(TGUI_BUILD_GUI_BUILDER OFF)
+FetchContent_MakeAvailable(TGUI)
 ###
 
 ### bulding the executable and adding the source files
@@ -53,7 +38,6 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 add_subdirectory(src)
 ###
 
-# target_link_libraries(${PROJECT_NAME} PRIVATE ImGui-SFML::ImGui-SFML)
 target_link_libraries(${PROJECT_NAME} PRIVATE 
     # sfml-audio 
     sfml-graphics 
@@ -61,7 +45,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     # sfml-network 
     sfml-system
 )
-target_link_libraries(${PROJECT_NAME} PRIVATE SFGUI::SFGUI)
+target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI)
 
 if(WIN32)
     if(SFML_BUILD_AUDIO)
@@ -75,7 +59,7 @@ endif()
 
 
 add_custom_command(
-        TARGET ${PROJECT_NAME}
+        TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
         ${PROJECT_SOURCE_DIR}/src/assets
         $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
