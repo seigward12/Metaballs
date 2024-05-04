@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+# option(BUILD_SHARED_LIBS "Build shared libraries" TRUE)
 
 ### adding dependencies
     # SFML
@@ -24,8 +24,8 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/texus/TGUI.git
     GIT_TAG v1.2.0)
 set(TGUI_BACKEND SFML_GRAPHICS)
-set(TGUI_BUILD_EXAMPLES OFF)
-set(TGUI_BUILD_GUI_BUILDER OFF)
+set(TGUI_BUILD_EXAMPLES FALSE)
+set(TGUI_BUILD_GUI_BUILDER FALSE)
 FetchContent_MakeAvailable(TGUI)
 ###
 
