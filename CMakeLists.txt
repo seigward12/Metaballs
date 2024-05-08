@@ -4,11 +4,12 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(BUILD_SHARED_LIBS FALSE)
 
 ### adding dependencies
-    # SFML
+set(BUILD_SHARED_LIBS FALSE)
 include(FetchContent)
+
+    # SFML
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
@@ -23,7 +24,6 @@ FetchContent_Declare(
     TGUI
     GIT_REPOSITORY https://github.com/texus/TGUI.git
     GIT_TAG v1.2.0)
-set(TGUI_SHARED_LIBS FALSE)
 set(TGUI_BACKEND SFML_GRAPHICS)
 set(TGUI_BUILD_EXAMPLES FALSE)
 set(TGUI_BUILD_GUI_BUILDER FALSE)
@@ -41,11 +41,11 @@ add_subdirectory(src)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI)
 target_link_libraries(${PROJECT_NAME} PRIVATE 
-# sfml-audio 
-sfml-graphics 
-sfml-window 
-# sfml-network 
-sfml-system
+    # sfml-audio 
+    sfml-graphics 
+    sfml-window 
+    # sfml-network 
+    sfml-system
 )
 
 if(WIN32)
