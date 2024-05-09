@@ -1,6 +1,13 @@
 #include "MainScreen.hpp"
 
 #include <SFML/Graphics.hpp>
+#include <TGUI/Backend/SFML-Graphics.hpp>
+#include <TGUI/Widgets/CheckBox.hpp>
+#include <TGUI/Widgets/EditBox.hpp>
+#include <TGUI/Widgets/HorizontalLayout.hpp>
+#include <TGUI/Widgets/Label.hpp>
+#include <TGUI/Widgets/ToggleButton.hpp>
+#include <TGUI/Widgets/VerticalLayout.hpp>
 #include <iomanip>
 #include <iostream>  //TODO : remove
 
@@ -115,6 +122,40 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     });
 
     init();
+
+    tgui::VerticalLayout::Ptr verticalButtons = tgui::VerticalLayout::create();
+    verticalButtons->setPosition(boundary.getPosition().x + boundary.width, 0);
+    verticalButtons->setSize(stateManager->width - boundary.width,
+                             stateManager->height);
+    stateManager->gui.add(verticalButtons);
+
+    tgui::HorizontalLayout::Ptr testHorizontalLayout =
+        tgui::HorizontalLayout::create();
+    tgui::EditBox::Ptr editBox = tgui::EditBox::create();
+    tgui::Label::Ptr label = tgui::Label::create();
+    label->setText("Particules number");
+    testHorizontalLayout->add(label);    // index 0
+    testHorizontalLayout->add(editBox);  // index 1
+    verticalButtons->add(testHorizontalLayout);
+
+    testHorizontalLayout = testHorizontalLayout->copy(testHorizontalLayout);
+    testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
+    verticalButtons->add(testHorizontalLayout);
+
+    testHorizontalLayout = testHorizontalLayout->copy(testHorizontalLayout);
+    testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
+    verticalButtons->add(testHorizontalLayout);
+
+    testHorizontalLayout = testHorizontalLayout->copy(testHorizontalLayout);
+    testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
+    verticalButtons->add(testHorizontalLayout);
+
+    testHorizontalLayout = testHorizontalLayout->copy(testHorizontalLayout);
+    testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
+
+    tgui::ToggleButton::Ptr collisionToggle = tgui::ToggleButton::create();
+    collisionToggle->setText("Enable Collisions");
+    verticalButtons->add(collisionToggle);
 }
 
 void MainScreen::init() {

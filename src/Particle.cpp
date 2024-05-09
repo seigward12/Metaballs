@@ -55,7 +55,7 @@ void Particle::setVelocity(const sf::Vector2f velocity) {
 void Particle::setRadius(const float radius) {
     shape.setRadius(radius);
     shape.setPointCount(std::max(static_cast<int>(std::sqrt(radius) * 4.), 3));
-    massInverse = 1 / (radius * radius);
+    massInverse = 1. / (radius * radius);
 }
 
 void Particle::setInfiniteMass(bool isInfiniteMass) {
