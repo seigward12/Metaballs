@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
+#include <TGUI/Widgets/Button.hpp>
 #include <TGUI/Widgets/CheckBox.hpp>
 #include <TGUI/Widgets/EditBox.hpp>
 #include <TGUI/Widgets/HorizontalLayout.hpp>
@@ -132,8 +133,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     tgui::HorizontalLayout::Ptr testHorizontalLayout =
         tgui::HorizontalLayout::create();
     tgui::EditBox::Ptr editBox = tgui::EditBox::create();
-    tgui::Label::Ptr label = tgui::Label::create();
-    label->setText("Particules number");
+    tgui::Label::Ptr label = tgui::Label::create("Particules number");
     testHorizontalLayout->add(label);    // index 0
     testHorizontalLayout->add(editBox);  // index 1
     verticalButtons->add(testHorizontalLayout);
@@ -153,9 +153,19 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
     testHorizontalLayout = testHorizontalLayout->copy(testHorizontalLayout);
     testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
 
-    tgui::ToggleButton::Ptr collisionToggle = tgui::ToggleButton::create();
-    collisionToggle->setText("Enable Collisions");
-    verticalButtons->add(collisionToggle);
+    tgui::ToggleButton::Ptr toggle = tgui::ToggleButton::create("pause");
+    verticalButtons->add(toggle);
+    toggle = tgui::ToggleButton::create("Show mouse Query");
+    verticalButtons->add(toggle);
+    toggle = tgui::ToggleButton::create("Show QuadTree");
+    verticalButtons->add(toggle);
+    toggle = tgui::ToggleButton::create("Enable Brush Mode");
+    verticalButtons->add(toggle);
+    toggle = tgui::ToggleButton::create("Enable Collisions");
+    verticalButtons->add(toggle);
+
+    tgui::Button::Ptr button = tgui::Button::create("Apply");
+    verticalButtons->add(button);
 }
 
 void MainScreen::init() {
