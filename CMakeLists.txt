@@ -8,12 +8,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 ### adding dependencies
 set(BUILD_SHARED_LIBS FALSE)
 include(FetchContent)
+set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE) # Supposed to avoid fetchContent from checking for updates everyTime
 
     # SFML
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 2.6.x)
+    GIT_TAG 69ea0cd863aed1d4092b970b676924a716ff718b # 2.6.1
+)
 set(SFML_BUILD_AUDIO FALSE)
 set(SFML_BUILD_NETWORK FALSE)
 set(SFML_BUILD_EXAMPLES FALSE)
@@ -23,7 +25,8 @@ FetchContent_MakeAvailable(SFML)
 FetchContent_Declare(
     TGUI
     GIT_REPOSITORY https://github.com/texus/TGUI.git
-    GIT_TAG v1.2.0)
+    GIT_TAG 9fe2d5d408627965beda66e0a042ae1f0d86268d # v1.2.0
+)
 set(TGUI_BACKEND SFML_GRAPHICS)
 set(TGUI_BUILD_EXAMPLES FALSE)
 set(TGUI_BUILD_GUI_BUILDER FALSE)
@@ -73,3 +76,6 @@ install(TARGETS ${PROJECT_NAME})
 
 include(InstallRequiredSystemLibraries)
 include(CPack)
+
+#TODO use ninja
+#TODO use ccache
