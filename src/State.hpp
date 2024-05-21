@@ -5,11 +5,11 @@ class StateManager;
 
 class State : public sf::Drawable {
    protected:
-    StateManager* stateManager;
+	StateManager* stateManager;
 
    public:
-    State(StateManager* stateManager) : stateManager{stateManager} {};
-    ~State() = default;
-    virtual void processEvent(const sf::Event& event) = 0;
-    virtual void update(const sf::Time& dt) = 0;
+	State(StateManager* stateManager) : stateManager{stateManager} {};
+	~State() = default;
+	virtual void processEvent(const sf::Event& event) = 0;
+	virtual void update(const sf::Time& dt) = 0;
 };
