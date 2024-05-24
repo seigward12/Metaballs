@@ -11,6 +11,8 @@
 #include <TGUI/Widgets/VerticalLayout.hpp>
 #include <iomanip>
 
+const std::string STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
+
 MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
 							 stateManager->height - 20);
@@ -44,6 +46,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	tgui::HorizontalLayout::Ptr testHorizontalLayout =
 		tgui::HorizontalLayout::create();
 	tgui::EditBox::Ptr editBox = tgui::EditBox::create();
+	editBox->setInputValidator(tgui::EditBox::Validator::UInt);
 	editBox->setTextSize(30);
 	tgui::Label::Ptr label = tgui::Label::create("Particules number");
 	label->setTextSize(30);
@@ -53,19 +56,22 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	verticalButtons->add(testHorizontalLayout);
 
 	testHorizontalLayout = tgui::HorizontalLayout::copy(testHorizontalLayout);
+	testHorizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
+		STRICLY_POSITIVE_INT_REGEX);
 	testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
 	verticalButtons->add(testHorizontalLayout);
 
 	testHorizontalLayout = tgui::HorizontalLayout::copy(testHorizontalLayout);
+	testHorizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
+		tgui::EditBox::Validator::UInt);
 	testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
 	verticalButtons->add(testHorizontalLayout);
 
 	testHorizontalLayout = tgui::HorizontalLayout::copy(testHorizontalLayout);
+	testHorizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
+		STRICLY_POSITIVE_INT_REGEX);
 	testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
 	verticalButtons->add(testHorizontalLayout);
-
-	testHorizontalLayout = tgui::HorizontalLayout::copy(testHorizontalLayout);
-	testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
 
 	tgui::ToggleButton::Ptr toggle = tgui::ToggleButton::create("pause");
 	verticalButtons->add(toggle);
