@@ -4,12 +4,10 @@
 #include <vector>
 
 #include <memory>
-#include "Button.hpp"
 #include "Particle.hpp"
 #include "QuadTree.hpp"
 #include "State.hpp"
 #include "StateManager.hpp"
-#include "TextBox.hpp"
 
 const sf::Color DEFAULT_COLOR = sf::Color(0, 255, 0, 255);
 const sf::Color COLLISION_COLOR = sf::Color(255, 0, 0, 255);
@@ -40,24 +38,18 @@ class MainScreen : public State {
 
 	std::unique_ptr<QuadTree<Particle>> quadTree;
 	sf::FloatRect boundary;
-	unsigned short treeNodeCapacity;
+	unsigned short treeNodeCapacity = 4;
+	unsigned short objectNum = 10;
+	float radius = 3;
+	float highestRadius = 0;
 
 	std::vector<std::unique_ptr<Particle>> particles;
 	std::vector<Particle*> myCollisions;
 
-	unsigned short objectNum;
-	float radius;
-	float highestRadius = 0;
-
 	sf::Font font;
-
-	std::vector<TextBox> textboxes;
-	std::vector<sf::Text> labels;
 	sf::Text fpsLabel;
 	sf::Clock fpsTimer;
-	std::vector<Button> buttons;
 
-	void init();
 	void initializeObjects();
 	void moveObjects(const sf::Time& dt);
 	void addParticle(const sf::Vector2f& position);

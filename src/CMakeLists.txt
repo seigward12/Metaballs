@@ -4,6 +4,4 @@ target_sources(${PROJECT_NAME} PRIVATE
     StateManager.cpp
     Particle.cpp
     QuadTree.hpp
-    TextBox.cpp
-    Button.cpp
 )
