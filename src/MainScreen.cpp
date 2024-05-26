@@ -34,16 +34,16 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	const sf::FloatRect temp = mouseRect.getGlobalBounds();
 	mouseRect.setOrigin(temp.left + temp.width / 2, temp.top + temp.height / 2);
 
-	tgui::Font a("assets/fonts/arial.ttf");
-	tgui::Font::setGlobalFont(a);
+	tgui::Font font("assets/fonts/arial.ttf");
+	tgui::Font::setGlobalFont(font);
 
-	tgui::VerticalLayout::Ptr verticalButtons = tgui::VerticalLayout::create();
-	verticalButtons->setPosition(boundary.getPosition().x + boundary.width, 0);
-	verticalButtons->setSize(stateManager->width - boundary.width,
-							 stateManager->height);
-	stateManager->gui.add(verticalButtons);
+	tgui::VerticalLayout::Ptr sideBarOptions = tgui::VerticalLayout::create();
+	sideBarOptions->setPosition(boundary.getPosition().x + boundary.width, 0);
+	sideBarOptions->setSize(stateManager->width - boundary.width,
+							stateManager->height);
+	stateManager->gui.add(sideBarOptions);
 
-	tgui::HorizontalLayout::Ptr testHorizontalLayout =
+	tgui::HorizontalLayout::Ptr horizontalLayout =
 		tgui::HorizontalLayout::create();
 	tgui::EditBox::Ptr editBox = tgui::EditBox::create();
 	editBox->setInputValidator(tgui::EditBox::Validator::UInt);
@@ -51,41 +51,74 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	tgui::Label::Ptr label = tgui::Label::create("Particules number");
 	label->setTextSize(30);
 	label->getRenderer()->setTextColor(tgui::Color::White);
-	testHorizontalLayout->add(label);	 // index 0
-	testHorizontalLayout->add(editBox);	 // index 1
-	verticalButtons->add(testHorizontalLayout);
+	label->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
+	horizontalLayout->add(label);	 // index 0
+	horizontalLayout->add(editBox);	 // index 1
+	sideBarOptions->add(horizontalLayout);
 
-	testHorizontalLayout = tgui::HorizontalLayout::copy(testHorizontalLayout);
-	testHorizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
+	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
+	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
 		STRICLY_POSITIVE_INT_REGEX);
-	testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
-	verticalButtons->add(testHorizontalLayout);
+	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
+	sideBarOptions->add(horizontalLayout);
 
-	testHorizontalLayout = tgui::HorizontalLayout::copy(testHorizontalLayout);
-	testHorizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
+	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
+	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
 		tgui::EditBox::Validator::UInt);
-	testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
-	verticalButtons->add(testHorizontalLayout);
+	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
+	sideBarOptions->add(horizontalLayout);
 
-	testHorizontalLayout = tgui::HorizontalLayout::copy(testHorizontalLayout);
-	testHorizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
+	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
+	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
 		STRICLY_POSITIVE_INT_REGEX);
-	testHorizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
-	verticalButtons->add(testHorizontalLayout);
+	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
+	sideBarOptions->add(horizontalLayout);
 
-	tgui::ToggleButton::Ptr toggle = tgui::ToggleButton::create("pause");
-	verticalButtons->add(toggle);
-	toggle = tgui::ToggleButton::create("Show mouse Query");
-	verticalButtons->add(toggle);
-	toggle = tgui::ToggleButton::create("Show QuadTree");
-	verticalButtons->add(toggle);
-	toggle = tgui::ToggleButton::create("Enable Brush Mode");
-	verticalButtons->add(toggle);
+	tgui::ToggleButton::Ptr toggle = tgui::ToggleButton::create();
+	toggle->onToggle([toggle, this](bool isPaused) {
+		toggle->setText(isPaused ? "Resume" : "Pause");
+		this->setPaused(isPaused);
+	});
+	toggle->onToggle.emit(toggle.get(), isPaused);
+	sideBarOptions->add(toggle);
+
+	toggle = tgui::ToggleButton::create();
+	toggle->onToggle([toggle, this](bool isShowingQuery) {
+		toggle->setText(isShowingQuery ? "Hide mouse query"
+									   : "Show mouse query");
+		this->setMouseRectVisibility(isShowingQuery);
+	});
+	toggle->onToggle.emit(toggle.get(), showMouseRect);
+	sideBarOptions->add(toggle);
+
+	toggle = tgui::ToggleButton::create();
+	toggle->onToggle([toggle, this](bool isShowingQuadTree) {
+		toggle->setText(isShowingQuadTree ? "Hide QuadTree" : "Show QuadTree");
+		this->setQuadTreeVisibility(isShowingQuadTree);
+	});
+	toggle->onToggle.emit(toggle.get(), showQuadTree);
+	sideBarOptions->add(toggle);
+
+	toggle = tgui::ToggleButton::create();
+	toggle->onToggle([toggle, this](bool isBrushModeEnabled) {
+		toggle->setText(isBrushModeEnabled ? "Disable Brush Mode"
+										   : "Enable Brush Mode");
+		this->enableBrushMode(isBrushModeEnabled);
+	});
+	toggle->onToggle.emit(toggle.get(), brushMode);
+	sideBarOptions->add(toggle);
+
 	toggle = tgui::ToggleButton::create("Enable Collisions");
-	verticalButtons->add(toggle);
+	toggle->onToggle([toggle, this](bool isCollisionEnabled) {
+		toggle->setText(isCollisionEnabled ? "Disable Collisions"
+										   : "Enable Collisions");
+		this->enableCollisions(isCollisionEnabled);
+	});
+	toggle->onToggle.emit(toggle.get(), collisionEnabled);
+	sideBarOptions->add(toggle);
 
 	tgui::Button::Ptr button = tgui::Button::create("Apply");
-	verticalButtons->add(button);
+	sideBarOptions->add(button);
 }
 
 void MainScreen::processEvent(const sf::Event& event) {
@@ -110,7 +143,7 @@ void MainScreen::processEvent(const sf::Event& event) {
 		case sf::Event::KeyPressed:
 			switch (event.key.code) {
 				case sf::Keyboard::Space:
-					pause = !pause;
+					isPaused = !isPaused;
 					break;
 
 				case sf::Keyboard::M:
@@ -157,7 +190,7 @@ void MainScreen::update(const sf::Time& dt) {
 		}
 	}
 
-	if (!pause) {
+	if (!isPaused) {
 		moveObjects(dt);
 	} else if (selectedParticle != nullptr) {
 		selectedParticle->setPosition(mousePosition);
@@ -176,7 +209,7 @@ void MainScreen::update(const sf::Time& dt) {
 			if (particle.get() == myCollision)
 				continue;
 
-			if (collisionEnabled && !pause) {
+			if (collisionEnabled && !isPaused) {
 				particle->collideWithParticle(*myCollision);
 			} else {
 				if (particle->isColliding(*myCollision)) {

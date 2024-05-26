@@ -22,8 +22,14 @@ class MainScreen : public State {
 	void update(const sf::Time& dt) override;
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
+	void setPaused(bool isPaused) { this->isPaused = isPaused; };
+	void setMouseRectVisibility(bool isVisible) { showMouseRect = isVisible; };
+	void setQuadTreeVisibility(bool isVisible) { showQuadTree = isVisible; };
+	void enableBrushMode(bool enabled) { brushMode = enabled; };
+	void enableCollisions(bool enabled) { collisionEnabled = enabled; };
+
    private:
-	bool pause = false;
+	bool isPaused = false;
 	bool brushMode = false;
 	bool pressed = false;
 	bool showQuadTree = false;
