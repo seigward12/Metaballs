@@ -4,7 +4,6 @@
 #include <TGUI/Backend/SFML-Graphics.hpp>
 #include <TGUI/Widgets/Button.hpp>
 #include <TGUI/Widgets/CheckBox.hpp>
-#include <TGUI/Widgets/EditBox.hpp>
 #include <TGUI/Widgets/HorizontalLayout.hpp>
 #include <TGUI/Widgets/Label.hpp>
 #include <TGUI/Widgets/ToggleButton.hpp>
@@ -17,14 +16,14 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
 							 stateManager->height - 20);
 
-	treeNodeCapacity = 4, objectNum = 8, radius = 25;
+	treeNodeCapacity = 4, radius = 25;
 
 	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 
 	font.loadFromFile("assets/fonts/arial.ttf");
 	fpsLabel.setFont(font);
 
-	initializeObjects();
+	initializeObjects(10);
 
 	mouseRect.setSize(
 		sf::Vector2f(stateManager->height / 3.f, stateManager->height / 3.f));
@@ -34,45 +33,52 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	const sf::FloatRect temp = mouseRect.getGlobalBounds();
 	mouseRect.setOrigin(temp.left + temp.width / 2, temp.top + temp.height / 2);
 
+	// set up tgui buttons
 	tgui::Font font("assets/fonts/arial.ttf");
 	tgui::Font::setGlobalFont(font);
-
-	tgui::VerticalLayout::Ptr sideBarOptions = tgui::VerticalLayout::create();
-	sideBarOptions->setPosition(boundary.getPosition().x + boundary.width, 0);
-	sideBarOptions->setSize(stateManager->width - boundary.width,
-							stateManager->height);
-	stateManager->gui.add(sideBarOptions);
+	tgui::VerticalLayout::Ptr verticalSideBar = tgui::VerticalLayout::create();
+	verticalSideBar->setPosition(boundary.getPosition().x + boundary.width, 0);
+	verticalSideBar->setSize(stateManager->width - boundary.width,
+							 stateManager->height);
+	stateManager->gui.add(verticalSideBar);
 
 	tgui::HorizontalLayout::Ptr horizontalLayout =
 		tgui::HorizontalLayout::create();
-	tgui::EditBox::Ptr editBox = tgui::EditBox::create();
-	editBox->setInputValidator(tgui::EditBox::Validator::UInt);
-	editBox->setTextSize(30);
+	particulesCounter = tgui::EditBox::create();
+	particulesCounter->setInputValidator(tgui::EditBox::Validator::UInt);
+	particulesCounter->setTextSize(30);
+	particulesCounter->onReturnOrUnfocus([this](const tgui::String& value) {
+		this->setParticulesNumber(value.toInt());
+	});
 	tgui::Label::Ptr label = tgui::Label::create("Particules number");
 	label->setTextSize(30);
 	label->getRenderer()->setTextColor(tgui::Color::White);
 	label->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
-	horizontalLayout->add(label);	 // index 0
-	horizontalLayout->add(editBox);	 // index 1
-	sideBarOptions->add(horizontalLayout);
+	horizontalLayout->add(label);			   // index 0
+	horizontalLayout->add(particulesCounter);  // index 1
+	verticalSideBar->add(horizontalLayout);
+	verticalSideBar->addSpace(0.1);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
 	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
 		STRICLY_POSITIVE_INT_REGEX);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
-	sideBarOptions->add(horizontalLayout);
+	verticalSideBar->add(horizontalLayout);
+	verticalSideBar->addSpace(0.1);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
 	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
 		tgui::EditBox::Validator::UInt);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
-	sideBarOptions->add(horizontalLayout);
+	verticalSideBar->add(horizontalLayout);
+	verticalSideBar->addSpace(0.1);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
 	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
 		STRICLY_POSITIVE_INT_REGEX);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
-	sideBarOptions->add(horizontalLayout);
+	verticalSideBar->add(horizontalLayout);
+	verticalSideBar->addSpace(0.1);
 
 	tgui::ToggleButton::Ptr toggle = tgui::ToggleButton::create();
 	toggle->onToggle([toggle, this](bool isPaused) {
@@ -80,7 +86,8 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 		this->setPaused(isPaused);
 	});
 	toggle->onToggle.emit(toggle.get(), isPaused);
-	sideBarOptions->add(toggle);
+	verticalSideBar->add(toggle);
+	verticalSideBar->addSpace(0.1);
 
 	toggle = tgui::ToggleButton::create();
 	toggle->onToggle([toggle, this](bool isShowingQuery) {
@@ -89,7 +96,8 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 		this->setMouseRectVisibility(isShowingQuery);
 	});
 	toggle->onToggle.emit(toggle.get(), showMouseRect);
-	sideBarOptions->add(toggle);
+	verticalSideBar->add(toggle);
+	verticalSideBar->addSpace(0.1);
 
 	toggle = tgui::ToggleButton::create();
 	toggle->onToggle([toggle, this](bool isShowingQuadTree) {
@@ -97,7 +105,8 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 		this->setQuadTreeVisibility(isShowingQuadTree);
 	});
 	toggle->onToggle.emit(toggle.get(), showQuadTree);
-	sideBarOptions->add(toggle);
+	verticalSideBar->add(toggle);
+	verticalSideBar->addSpace(0.1);
 
 	toggle = tgui::ToggleButton::create();
 	toggle->onToggle([toggle, this](bool isBrushModeEnabled) {
@@ -106,7 +115,8 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 		this->enableBrushMode(isBrushModeEnabled);
 	});
 	toggle->onToggle.emit(toggle.get(), brushMode);
-	sideBarOptions->add(toggle);
+	verticalSideBar->add(toggle);
+	verticalSideBar->addSpace(0.1);
 
 	toggle = tgui::ToggleButton::create("Enable Collisions");
 	toggle->onToggle([toggle, this](bool isCollisionEnabled) {
@@ -115,10 +125,11 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 		this->enableCollisions(isCollisionEnabled);
 	});
 	toggle->onToggle.emit(toggle.get(), collisionEnabled);
-	sideBarOptions->add(toggle);
+	verticalSideBar->add(toggle);
+	verticalSideBar->addSpace(0.1);
 
 	tgui::Button::Ptr button = tgui::Button::create("Apply");
-	sideBarOptions->add(button);
+	verticalSideBar->add(button);
 }
 
 void MainScreen::processEvent(const sf::Event& event) {
@@ -259,9 +270,9 @@ void MainScreen::moveObjects(const sf::Time& dt) {
 		myObject->update(dt, boundary);
 }
 
-void MainScreen::initializeObjects() {
+void MainScreen::initializeObjects(int objectNumber) {
 	particles.clear();
-	for (unsigned short i = 0; i < objectNum; i++) {
+	for (unsigned short i = 0; i < objectNumber; i++) {
 		addParticle(sf::Vector2f((rand() % (int)boundary.width),
 								 ((rand() % (int)boundary.height))));
 	}
@@ -275,7 +286,6 @@ void MainScreen::brush() {
 		return;
 
 	addParticle(sf::Vector2f(mousePosition.x, mousePosition.y));
-	objectNum++;
 }
 
 void MainScreen::addParticle(const sf::Vector2f& position) {
@@ -337,5 +347,11 @@ void MainScreen::resize(const sf::Vector2f& dimensions) {
 		if (myObject->getCenterPosition().y > boundary.height)
 			myObject->setPosition(
 				sf::Vector2f(myObject->getCenterPosition().x, boundary.height));
+	}
+}
+
+void MainScreen::setParticulesNumber(int particulesNumber) {
+	if (particles.size() != particulesNumber) {
+		initializeObjects(particulesNumber);
 	}
 }

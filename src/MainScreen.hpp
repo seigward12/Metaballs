@@ -9,8 +9,10 @@
 #include "State.hpp"
 #include "StateManager.hpp"
 
-const sf::Color DEFAULT_COLOR = sf::Color(0, 255, 0, 255);
-const sf::Color COLLISION_COLOR = sf::Color(255, 0, 0, 255);
+#include <TGUI/Widgets/EditBox.hpp>
+
+const sf::Color DEFAULT_COLOR = sf::Color::Green;
+const sf::Color COLLISION_COLOR = sf::Color::Red;
 const sf::Color MOUSE_RECT_COLOR = sf::Color::Magenta;
 const sf::Color QUAD_TREE_COLOR = sf::Color::White;
 
@@ -22,6 +24,10 @@ class MainScreen : public State {
 	void update(const sf::Time& dt) override;
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
+	// editBoxes methods
+	void setParticulesNumber(int particulesNumber);
+
+	// checkboxes methods
 	void setPaused(bool isPaused) { this->isPaused = isPaused; };
 	void setMouseRectVisibility(bool isVisible) { showMouseRect = isVisible; };
 	void setQuadTreeVisibility(bool isVisible) { showQuadTree = isVisible; };
@@ -36,18 +42,19 @@ class MainScreen : public State {
 	bool showMouseRect = false;
 	bool collisionEnabled = false;
 
+	unsigned short treeNodeCapacity = 4;
+	float radius = 3;
+	float highestRadius = 0;
 	float particleSpeed = 100.f;
+
 	Particle* selectedParticle = nullptr;
+
 	sf::RectangleShape mouseRect;
 	sf::Vector2f mousePosition = sf::Vector2f(0, 0);
 	sf::Vector2f oldMousePosition = sf::Vector2f(0, 0);
 
 	std::unique_ptr<QuadTree<Particle>> quadTree;
 	sf::FloatRect boundary;
-	unsigned short treeNodeCapacity = 4;
-	unsigned short objectNum = 10;
-	float radius = 3;
-	float highestRadius = 0;
 
 	std::vector<std::unique_ptr<Particle>> particles;
 	std::vector<Particle*> myCollisions;
@@ -56,7 +63,9 @@ class MainScreen : public State {
 	sf::Text fpsLabel;
 	sf::Clock fpsTimer;
 
-	void initializeObjects();
+	tgui::EditBox::Ptr particulesCounter;
+
+	void initializeObjects(int objectNumber);
 	void moveObjects(const sf::Time& dt);
 	void addParticle(const sf::Vector2f& position);
 	void brush();
