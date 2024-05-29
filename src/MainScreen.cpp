@@ -11,6 +11,7 @@
 #include <iomanip>
 
 const std::string STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
+const uint8_t BUTTON_TEXT_SIZE = 30;
 
 MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
@@ -46,12 +47,12 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 		tgui::HorizontalLayout::create();
 	particulesCounter = tgui::EditBox::create();
 	particulesCounter->setInputValidator(tgui::EditBox::Validator::UInt);
-	particulesCounter->setTextSize(30);
+	particulesCounter->setTextSize(BUTTON_TEXT_SIZE);
 	particulesCounter->onReturnOrUnfocus([this](const tgui::String& value) {
 		this->setParticulesNumber(value.toInt());
 	});
 	tgui::Label::Ptr label = tgui::Label::create("Particules number");
-	label->setTextSize(30);
+	label->setTextSize(BUTTON_TEXT_SIZE);
 	label->getRenderer()->setTextColor(tgui::Color::White);
 	label->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
 	horizontalLayout->add(label);			   // index 0
@@ -86,10 +87,11 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 		this->setPaused(isPaused);
 	});
 	toggle->onToggle.emit(toggle.get(), isPaused);
+	toggle->setTextSize(BUTTON_TEXT_SIZE);
 	verticalSideBar->add(toggle);
 	verticalSideBar->addSpace(0.1);
 
-	toggle = tgui::ToggleButton::create();
+	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isShowingQuery) {
 		toggle->setText(isShowingQuery ? "Hide mouse query"
 									   : "Show mouse query");
@@ -99,7 +101,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	verticalSideBar->add(toggle);
 	verticalSideBar->addSpace(0.1);
 
-	toggle = tgui::ToggleButton::create();
+	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isShowingQuadTree) {
 		toggle->setText(isShowingQuadTree ? "Hide QuadTree" : "Show QuadTree");
 		this->setQuadTreeVisibility(isShowingQuadTree);
@@ -108,7 +110,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	verticalSideBar->add(toggle);
 	verticalSideBar->addSpace(0.1);
 
-	toggle = tgui::ToggleButton::create();
+	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isBrushModeEnabled) {
 		toggle->setText(isBrushModeEnabled ? "Disable Brush Mode"
 										   : "Enable Brush Mode");
@@ -118,7 +120,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	verticalSideBar->add(toggle);
 	verticalSideBar->addSpace(0.1);
 
-	toggle = tgui::ToggleButton::create("Enable Collisions");
+	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isCollisionEnabled) {
 		toggle->setText(isCollisionEnabled ? "Disable Collisions"
 										   : "Enable Collisions");
@@ -129,6 +131,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	verticalSideBar->addSpace(0.1);
 
 	tgui::Button::Ptr button = tgui::Button::create("Apply");
+	button->setTextSize(BUTTON_TEXT_SIZE);
 	verticalSideBar->add(button);
 }
 
