@@ -21,7 +21,13 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
 	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 
-	font.loadFromFile("assets/fonts/arial.ttf");
+	bool result = font.loadFromFile("assets/fonts/arial.ttf");
+#ifdef _DEBUG
+	if (result) {
+		std::cerr << "Error: loading font failed\n";
+		exit(1);
+	}
+#endif
 	fpsLabel.setFont(font);
 
 	initializeObjects(10);

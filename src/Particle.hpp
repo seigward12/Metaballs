@@ -33,7 +33,6 @@ class Particle : public sf::Drawable {
 	sf::Vector2f velocity;
 	float massInverse;
 
-	inline static unsigned short count = 0;
 	unsigned short id;
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

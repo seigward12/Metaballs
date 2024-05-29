@@ -2,16 +2,13 @@
 #include <cmath>
 
 Particle::Particle(const float radius) {
-	id = count++;
 	setRadius(radius);
 	setPosition(sf::Vector2f(0, 0));
 	shape.setFillColor(sf::Color::White);
 	velocity = sf::Vector2f(0, 0);
 }
 
-Particle::~Particle() {
-	count--;
-}
+Particle::~Particle() {}
 
 void Particle::update(const sf::Time& dt, const sf::FloatRect& boundary) {
 	if (shape.getPosition().x < boundary.left) {
