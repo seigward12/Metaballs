@@ -27,7 +27,7 @@ class MainScreen : public State {
 	void setParticulesNumber(int particulesNumber);
 
 	// checkboxes methods
-	void setPaused(bool isPaused) { this->isPaused = isPaused; };
+	void setPaused(bool _isPaused) { isPaused = _isPaused; };
 	void setMouseRectVisibility(bool isVisible) { showMouseRect = isVisible; };
 	void setQuadTreeVisibility(bool isVisible) { showQuadTree = isVisible; };
 	void enableBrushMode(bool enabled) { brushMode = enabled; };

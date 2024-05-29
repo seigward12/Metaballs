@@ -25,15 +25,10 @@ class Particle : public sf::Drawable {
 
 	bool isColliding(const Particle& other) const;
 
-	bool operator==(const Particle& other) const;
-	bool operator!=(const Particle& other) const;
-
    private:
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
 	sf::CircleShape shape;
 	sf::Vector2f velocity;
 	float massInverse;
-
-	unsigned short id;
-
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };

@@ -23,7 +23,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
 	bool result = font.loadFromFile("assets/fonts/arial.ttf");
 #ifdef _DEBUG
-	if (result) {
+	if (!result) {
 		std::cerr << "Error: loading font failed\n";
 		exit(1);
 	}
@@ -41,8 +41,9 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	mouseRect.setOrigin(temp.left + temp.width / 2, temp.top + temp.height / 2);
 
 	// set up tgui buttons
-	tgui::Font font("assets/fonts/arial.ttf");
-	tgui::Font::setGlobalFont(font);
+	tgui::Font tguiFont("assets/fonts/arial.ttf");	// TODO charger a partir du
+													// sfml font ou le contraire
+	tgui::Font::setGlobalFont(tguiFont);
 	tgui::VerticalLayout::Ptr verticalSideBar = tgui::VerticalLayout::create();
 	verticalSideBar->setPosition(boundary.getPosition().x + boundary.width, 0);
 	verticalSideBar->setSize(stateManager->width - boundary.width,

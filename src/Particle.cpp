@@ -45,19 +45,19 @@ void Particle::setPosition(const sf::Vector2f position) {
 					  sf::Vector2f(shape.getRadius(), shape.getRadius()));
 }
 
-void Particle::setVelocity(const sf::Vector2f velocity) {
-	this->velocity = velocity;
+void Particle::setVelocity(const sf::Vector2f _velocity) {
+	velocity = _velocity;
 }
 
 void Particle::setRadius(const float radius) {
 	shape.setRadius(radius);
 	shape.setPointCount(std::max(static_cast<int>(std::sqrt(radius) * 4.), 3));
-	massInverse = 1. / (radius * radius);
+	massInverse = 1.f / (radius * radius);
 }
 
 void Particle::setInfiniteMass(bool isInfiniteMass) {
 	massInverse =
-		isInfiniteMass ? 0.0 : 1 / (shape.getRadius() * shape.getRadius());
+		isInfiniteMass ? 0.0f : 1 / (shape.getRadius() * shape.getRadius());
 }
 
 void Particle::setColor(const sf::Color color) {
@@ -89,14 +89,6 @@ sf::FloatRect Particle::getGlobalBounds() const {
 	return sf::FloatRect(
 		shape.getPosition(),
 		sf::Vector2f(shape.getRadius() * 2, shape.getRadius() * 2));
-}
-
-bool Particle::operator==(const Particle& other) const {
-	return id == other.id;
-}
-
-bool Particle::operator!=(const Particle& other) const {
-	return !(*this == other);
 }
 
 bool Particle::isColliding(const Particle& other) const {

@@ -74,6 +74,15 @@ install(DIRECTORY src/assets TYPE BIN)
 
 install(TARGETS ${PROJECT_NAME})
 
+
+### adding warning flags
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+else()
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+endif()
+###
+
 include(InstallRequiredSystemLibraries)
 include(CPack)
 
