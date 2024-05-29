@@ -22,7 +22,6 @@ class MainScreen : public State {
 
 	void processEvent(const sf::Event& event) override;
 	void update(const sf::Time& dt) override;
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	// editBoxes methods
 	void setParticulesNumber(int particulesNumber);
@@ -72,4 +71,5 @@ class MainScreen : public State {
 	void resize(const sf::Vector2f& dimensions);
 	void updateSelectedParticle(const sf::Vector2f& position);
 	void selectParticle();
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };

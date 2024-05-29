@@ -14,10 +14,10 @@ class QuadTree : public sf::Drawable {
 	~QuadTree();
 	void reset();
 	bool insert(DataType* object);
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	void query(sf::FloatRect range, std::vector<DataType*>& objectsFound);
 
    private:
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	unsigned short capacity;
 	bool divided = false;
 	std::unique_ptr<QuadTree> northWest, northEast, southWest,

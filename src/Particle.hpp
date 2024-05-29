@@ -7,7 +7,6 @@ class Particle : public sf::Drawable {
 	~Particle();
 
 	void update(const sf::Time& dt, const sf::FloatRect& boundary);
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	void collideWithParticle(Particle& other,
 							 const float restitutionCoefficient = 1.0f);
 
@@ -36,4 +35,6 @@ class Particle : public sf::Drawable {
 
 	inline static unsigned short count = 0;
 	unsigned short id;
+
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };

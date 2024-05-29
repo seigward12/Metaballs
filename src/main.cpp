@@ -4,8 +4,6 @@
 #include "MainScreen.hpp"
 #include "StateManager.hpp"
 
-typedef unsigned short ushort;
-
 int main() {
 	srand(time(NULL));
 	const unsigned int screenWidth =
