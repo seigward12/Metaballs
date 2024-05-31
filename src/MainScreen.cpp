@@ -8,13 +8,12 @@
 #include <TGUI/Widgets/Label.hpp>
 #include <TGUI/Widgets/ToggleButton.hpp>
 #include <TGUI/Widgets/VerticalLayout.hpp>
-#include <iomanip>
 
 const std::string STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
 const uint8_t BUTTON_TEXT_SIZE = 30;
 
 MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
-	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
+	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75f,
 							 stateManager->height - 20);
 
 	treeNodeCapacity = 4, radius = 25;
@@ -52,41 +51,63 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 
 	tgui::HorizontalLayout::Ptr horizontalLayout =
 		tgui::HorizontalLayout::create();
-	particulesCounter = tgui::EditBox::create();
-	particulesCounter->setInputValidator(tgui::EditBox::Validator::UInt);
-	particulesCounter->setTextSize(BUTTON_TEXT_SIZE);
-	particulesCounter->onReturnOrUnfocus([this](const tgui::String& value) {
+	particulesCountInput = tgui::EditBox::create();
+	particulesCountInput->setInputValidator(tgui::EditBox::Validator::UInt);
+	particulesCountInput->setTextSize(BUTTON_TEXT_SIZE);
+	particulesCountInput->onReturnOrUnfocus([this](const tgui::String& value) {
 		this->setParticulesNumber(value.toInt());
 	});
+	particulesCountInput->setText(std::to_string(particles.size()));
 	tgui::Label::Ptr label = tgui::Label::create("Particules number");
 	label->setTextSize(BUTTON_TEXT_SIZE);
 	label->getRenderer()->setTextColor(tgui::Color::White);
 	label->setVerticalAlignment(tgui::Label::VerticalAlignment::Center);
-	horizontalLayout->add(label);			   // index 0
-	horizontalLayout->add(particulesCounter);  // index 1
+	horizontalLayout->add(label);				  // index 0
+	horizontalLayout->add(particulesCountInput);  // index 1
 	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
-	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
-		STRICLY_POSITIVE_INT_REGEX);
+	tgui::EditBox::Ptr radiusInput =
+		horizontalLayout->get(1)->cast<tgui::EditBox>();
+	radiusInput->setInputValidator(STRICLY_POSITIVE_INT_REGEX);
+	radiusInput->setText(std::to_string(radius));
+	radiusInput->onReturnOrUnfocus([this](const tgui::String& value) {
+		// if (value.toInt() != this->treeNodeCapacity) {
+		// 	this->quadTre
+		// }
+	});
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
 	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
-	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
-		tgui::EditBox::Validator::UInt);
+	tgui::EditBox::Ptr speedInput =
+		horizontalLayout->get(1)->cast<tgui::EditBox>();
+	speedInput->setInputValidator(tgui::EditBox::Validator::Float);
+	speedInput->setText(std::to_string(particleSpeed));
+	speedInput->onReturnOrUnfocus([this](const tgui::String& value) {
+		// if (value.toInt() != this->treeNodeCapacity) {
+		// 	this->quadTre
+		// }
+	});
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
 	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
-	horizontalLayout->get(1)->cast<tgui::EditBox>()->setInputValidator(
-		STRICLY_POSITIVE_INT_REGEX);
+	tgui::EditBox::Ptr nodeCapacityInput =
+		horizontalLayout->get(1)->cast<tgui::EditBox>();
+	nodeCapacityInput->setInputValidator(STRICLY_POSITIVE_INT_REGEX);
+	nodeCapacityInput->setText(std::to_string(treeNodeCapacity));
+	nodeCapacityInput->onReturnOrUnfocus([this](const tgui::String& value) {
+		// if (value.toInt() != this->treeNodeCapacity) {
+		// 	this->quadTre
+		// }
+	});
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
 	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	tgui::ToggleButton::Ptr toggle = tgui::ToggleButton::create();
 	toggle->onToggle([toggle, this](bool isPaused) {
@@ -96,7 +117,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	toggle->onToggle.emit(toggle.get(), isPaused);
 	toggle->setTextSize(BUTTON_TEXT_SIZE);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isShowingQuery) {
@@ -106,7 +127,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	});
 	toggle->onToggle.emit(toggle.get(), showMouseRect);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isShowingQuadTree) {
@@ -115,7 +136,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	});
 	toggle->onToggle.emit(toggle.get(), showQuadTree);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isBrushModeEnabled) {
@@ -125,7 +146,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	});
 	toggle->onToggle.emit(toggle.get(), brushMode);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isCollisionEnabled) {
@@ -135,7 +156,7 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	});
 	toggle->onToggle.emit(toggle.get(), collisionEnabled);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1);
+	verticalSideBar->addSpace(0.1f);
 
 	tgui::Button::Ptr button = tgui::Button::create("Apply");
 	button->setTextSize(BUTTON_TEXT_SIZE);

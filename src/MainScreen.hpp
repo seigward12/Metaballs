@@ -62,7 +62,7 @@ class MainScreen : public State {
 	sf::Text fpsLabel;
 	sf::Clock fpsTimer;
 
-	tgui::EditBox::Ptr particulesCounter;
+	tgui::EditBox::Ptr particulesCountInput;
 
 	void initializeObjects(int objectNumber);
 	void moveObjects(const sf::Time& dt);
