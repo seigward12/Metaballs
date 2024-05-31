@@ -54,10 +54,12 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	particulesCountInput = tgui::EditBox::create();
 	particulesCountInput->setInputValidator(tgui::EditBox::Validator::UInt);
 	particulesCountInput->setTextSize(BUTTON_TEXT_SIZE);
-	particulesCountInput->onReturnOrUnfocus([this](const tgui::String& value) {
-		this->setParticulesNumber(value.toInt());
-	});
+	// particulesCountInput->onReturnOrUnfocus([this](const tgui::String& value)
+	// { 	this->setParticuleCount(value.toInt());
+	// });
 	particulesCountInput->setText(std::to_string(particles.size()));
+	particulesCountInput->onReturnKeyPress(&MainScreen::setParticuleCount,
+										   this);
 	tgui::Label::Ptr label = tgui::Label::create("Particules number");
 	label->setTextSize(BUTTON_TEXT_SIZE);
 	label->getRenderer()->setTextColor(tgui::Color::White);
@@ -317,6 +319,7 @@ void MainScreen::brush() {
 		return;
 
 	addParticle(sf::Vector2f(mousePosition.x, mousePosition.y));
+	particulesCountInput->setText(std::to_string(particles.size()));
 }
 
 void MainScreen::addParticle(const sf::Vector2f& position) {
@@ -381,8 +384,9 @@ void MainScreen::resize(const sf::Vector2f& dimensions) {
 	}
 }
 
-void MainScreen::setParticulesNumber(int particulesNumber) {
-	if (particles.size() != particulesNumber) {
-		initializeObjects(particulesNumber);
+void MainScreen::setParticuleCount(const tgui::String& particuleCountString) {
+	int particuleCount = particuleCountString.toInt();
+	if (particles.size() != particuleCount) {
+		initializeObjects(particuleCount);
 	}
 }

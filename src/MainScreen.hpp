@@ -24,7 +24,7 @@ class MainScreen : public State {
 	void update(const sf::Time& dt) override;
 
 	// editBoxes methods
-	void setParticulesNumber(int particulesNumber);
+	void setParticuleCount(const tgui::String&);
 
 	// checkboxes methods
 	void setPaused(bool _isPaused) { isPaused = _isPaused; };
