@@ -12,13 +12,13 @@
 const std::string STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
 const uint8_t BUTTON_TEXT_SIZE = 30;
 
-MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
+MainScreen::MainScreen(StateManager* stateManager)
+	: State{stateManager}, radius{4}, treeNodeCapacity{4}, particleSpeed{100} {
 	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75f,
 							 stateManager->height - 20);
 
-	treeNodeCapacity = 4, radius = 25;
-
 	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
+	setNewMaxRadius(radius);
 
 	bool result = font.loadFromFile("assets/fonts/arial.ttf");
 #ifdef _DEBUG
@@ -54,9 +54,6 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	particulesCountInput = tgui::EditBox::create();
 	particulesCountInput->setInputValidator(tgui::EditBox::Validator::UInt);
 	particulesCountInput->setTextSize(BUTTON_TEXT_SIZE);
-	// particulesCountInput->onReturnOrUnfocus([this](const tgui::String& value)
-	// { 	this->setParticuleCount(value.toInt());
-	// });
 	particulesCountInput->setText(std::to_string(particles.size()));
 	particulesCountInput->onReturnKeyPress(&MainScreen::setParticuleCount,
 										   this);
@@ -72,13 +69,9 @@ MainScreen::MainScreen(StateManager* stateManager) : State(stateManager) {
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
 	tgui::EditBox::Ptr radiusInput =
 		horizontalLayout->get(1)->cast<tgui::EditBox>();
-	radiusInput->setInputValidator(STRICLY_POSITIVE_INT_REGEX);
+	radiusInput->setInputValidator(tgui::EditBox::Validator::Float);
 	radiusInput->setText(std::to_string(radius));
-	radiusInput->onReturnOrUnfocus([this](const tgui::String& value) {
-		// if (value.toInt() != this->treeNodeCapacity) {
-		// 	this->quadTre
-		// }
-	});
+	radiusInput->onReturnKeyPress(&MainScreen::setParticuleRadius, this);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
 	verticalSideBar->add(horizontalLayout);
 	verticalSideBar->addSpace(0.1f);
@@ -323,14 +316,12 @@ void MainScreen::brush() {
 }
 
 void MainScreen::addParticle(const sf::Vector2f& position) {
-	particles.push_back(
-		std::make_unique<Particle>((radius / 2) + rand() % (int)radius));
+	particles.push_back(std::make_unique<Particle>(
+		(radius / 2) + rand() % static_cast<int>(radius)));
 	particles.back()->setPosition(position);
 	particles.back()->setVelocity(
 		sf::Vector2f((rand() % (int)particleSpeed - (particleSpeed) / 2),
 					 (rand() % (int)particleSpeed - (particleSpeed) / 2)));
-	if (particles.back()->getRadius() > highestRadius)
-		highestRadius = particles.back()->getRadius();
 }
 
 void MainScreen::selectParticle() {
@@ -386,7 +377,22 @@ void MainScreen::resize(const sf::Vector2f& dimensions) {
 
 void MainScreen::setParticuleCount(const tgui::String& particuleCountString) {
 	int particuleCount = particuleCountString.toInt();
-	if (particles.size() != particuleCount) {
+	if (particles.size() != particuleCount)
 		initializeObjects(particuleCount);
+}
+
+void MainScreen::setParticuleRadius(const tgui::String& newRadiusString) {
+	float newRadius = newRadiusString.toFloat();
+	if (radius != newRadius) {
+		radius = newRadius;
+		setNewMaxRadius(newRadius);
+		for (auto& particle : particles) {
+			particle->setRadius((radius / 2) +
+								rand() % static_cast<int>(radius));
+		}
 	}
+}
+
+void MainScreen::setNewMaxRadius(const float newRadius) {
+	highestRadius = newRadius * 1.5f;
 }

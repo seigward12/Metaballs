@@ -25,6 +25,7 @@ class MainScreen : public State {
 
 	// editBoxes methods
 	void setParticuleCount(const tgui::String&);
+	void setParticuleRadius(const tgui::String&);
 
 	// checkboxes methods
 	void setPaused(bool _isPaused) { isPaused = _isPaused; };
@@ -41,10 +42,10 @@ class MainScreen : public State {
 	bool showMouseRect = false;
 	bool collisionEnabled = false;
 
-	unsigned short treeNodeCapacity = 4;
-	float radius = 3;
-	float highestRadius = 0;
-	float particleSpeed = 100.f;
+	unsigned short treeNodeCapacity;
+	float radius;
+	float highestRadius;
+	float particleSpeed;
 
 	Particle* selectedParticle = nullptr;
 
@@ -72,4 +73,5 @@ class MainScreen : public State {
 	void updateSelectedParticle(const sf::Vector2f& position);
 	void selectParticle();
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	void setNewMaxRadius(const float newRadius);
 };
