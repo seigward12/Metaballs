@@ -81,11 +81,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 		horizontalLayout->get(1)->cast<tgui::EditBox>();
 	speedInput->setInputValidator(tgui::EditBox::Validator::Float);
 	speedInput->setText(std::to_string(particleSpeed));
-	speedInput->onReturnOrUnfocus([this](const tgui::String& value) {
-		// if (value.toInt() != this->treeNodeCapacity) {
-		// 	this->quadTre
-		// }
-	});
+	speedInput->onReturnKeyPress(&MainScreen::setParticuleSpeed, this);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
 	verticalSideBar->add(horizontalLayout);
 	verticalSideBar->addSpace(0.1f);
@@ -95,11 +91,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 		horizontalLayout->get(1)->cast<tgui::EditBox>();
 	nodeCapacityInput->setInputValidator(STRICLY_POSITIVE_INT_REGEX);
 	nodeCapacityInput->setText(std::to_string(treeNodeCapacity));
-	nodeCapacityInput->onReturnOrUnfocus([this](const tgui::String& value) {
-		// if (value.toInt() != this->treeNodeCapacity) {
-		// 	this->quadTre
-		// }
-	});
+	nodeCapacityInput->onReturnKeyPress(&MainScreen::setTreeNodeCapacity, this);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
 	verticalSideBar->add(horizontalLayout);
 	verticalSideBar->addSpace(0.1f);
@@ -395,4 +387,26 @@ void MainScreen::setParticuleRadius(const tgui::String& newRadiusString) {
 
 void MainScreen::setNewMaxRadius(const float newRadius) {
 	highestRadius = newRadius * 1.5f;
+}
+
+void MainScreen::setParticuleSpeed(const tgui::String& particuleSpeedString) {
+	float newParticuleSpeed = particuleSpeedString.toFloat();
+	if (particleSpeed != newParticuleSpeed) {
+		particleSpeed = newParticuleSpeed;
+		for (auto& particle : particles) {
+			particle->setVelocity(sf::Vector2f(
+				(rand() % (int)particleSpeed - (particleSpeed) / 2),
+				(rand() % (int)particleSpeed - (particleSpeed) / 2)));
+		}
+	}
+}
+
+void MainScreen::setTreeNodeCapacity(
+	const tgui::String& newTreeNodeCapacityString) {
+	int newTreeNodeCapacity = newTreeNodeCapacityString.toUInt();
+	if (treeNodeCapacity != newTreeNodeCapacity) {
+		treeNodeCapacity = newTreeNodeCapacity;
+		quadTree =
+			std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
+	}
 }

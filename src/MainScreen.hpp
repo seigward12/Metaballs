@@ -26,6 +26,8 @@ class MainScreen : public State {
 	// editBoxes methods
 	void setParticuleCount(const tgui::String&);
 	void setParticuleRadius(const tgui::String&);
+	void setParticuleSpeed(const tgui::String&);
+	void setTreeNodeCapacity(const tgui::String&);
 
 	// checkboxes methods
 	void setPaused(bool _isPaused) { isPaused = _isPaused; };
@@ -42,7 +44,7 @@ class MainScreen : public State {
 	bool showMouseRect = false;
 	bool collisionEnabled = false;
 
-	unsigned short treeNodeCapacity;
+	unsigned int treeNodeCapacity;
 	float radius;
 	float highestRadius;
 	float particleSpeed;
