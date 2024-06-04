@@ -12,6 +12,13 @@
 const std::string STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
 const uint8_t BUTTON_TEXT_SIZE = 30;
 
+sf::Vector2f getRandomVelocity(const float velocity) {
+	return velocity == 0.f
+			   ? sf::Vector2f()
+			   : sf::Vector2f((rand() % (int)velocity - (velocity) / 2),
+							  (rand() % (int)velocity - (velocity) / 2));
+}
+
 MainScreen::MainScreen(StateManager* stateManager)
 	: State{stateManager}, radius{4}, treeNodeCapacity{4}, particleSpeed{100} {
 	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75f,
@@ -269,15 +276,15 @@ void MainScreen::update(const sf::Time& dt) {
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	if (showQuadTree)
-		target.draw(*quadTree);
+		target.draw(*quadTree, states);
 
 	for (auto& myObject : particles)
-		target.draw(*myObject);
+		target.draw(*myObject, states);
 
 	if (showMouseRect)
-		target.draw(mouseRect);
+		target.draw(mouseRect, states);
 
-	target.draw(fpsLabel);
+	target.draw(fpsLabel, states);
 
 	if (selectedParticle != nullptr)
 		selectedParticle->setColor(sf::Color::Yellow);
@@ -311,9 +318,7 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
 	particles.push_back(std::make_unique<Particle>(
 		(radius / 2) + rand() % static_cast<int>(radius)));
 	particles.back()->setPosition(position);
-	particles.back()->setVelocity(
-		sf::Vector2f((rand() % (int)particleSpeed - (particleSpeed) / 2),
-					 (rand() % (int)particleSpeed - (particleSpeed) / 2)));
+	particles.back()->setVelocity(getRandomVelocity(particleSpeed));
 }
 
 void MainScreen::selectParticle() {
@@ -394,9 +399,7 @@ void MainScreen::setParticuleSpeed(const tgui::String& particuleSpeedString) {
 	if (particleSpeed != newParticuleSpeed) {
 		particleSpeed = newParticuleSpeed;
 		for (auto& particle : particles) {
-			particle->setVelocity(sf::Vector2f(
-				(rand() % (int)particleSpeed - (particleSpeed) / 2),
-				(rand() % (int)particleSpeed - (particleSpeed) / 2)));
+			particle->setVelocity(getRandomVelocity(particleSpeed));
 		}
 	}
 }
