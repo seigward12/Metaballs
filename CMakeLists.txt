@@ -42,14 +42,7 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 add_subdirectory(src)
 ###
 
-target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI)
-target_link_libraries(${PROJECT_NAME} PRIVATE 
-    # sfml-audio 
-    sfml-graphics 
-    sfml-window 
-    # sfml-network 
-    sfml-system
-)
+target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI sfml-graphics) //TGUI needs to be linked before SFML
 
 if(WIN32)
     if(SFML_BUILD_AUDIO)

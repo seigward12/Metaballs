@@ -11,10 +11,14 @@
 
 #include <TGUI/Widgets/EditBox.hpp>
 
-const sf::Color DEFAULT_COLOR = sf::Color::Green;
-const sf::Color COLLISION_COLOR = sf::Color::Red;
-const sf::Color MOUSE_RECT_COLOR = sf::Color::Magenta;
-const sf::Color QUAD_TREE_COLOR = sf::Color::White;
+// // const sf::Color DEFAULT_COLOR = sf::Color::Green;
+// // const sf::Color COLLISION_COLOR = sf::Color::Red;
+// // const sf::Color MOUSE_RECT_COLOR = sf::Color::Magenta;
+// // const sf::Color QUAD_TREE_COLOR = sf::Color::White;
+const sf::Color DEFAULT_COLOR = sf::Color(0, 255, 0, 255);
+const sf::Color COLLISION_COLOR = sf::Color(255, 0, 0, 255);
+const sf::Color MOUSE_RECT_COLOR = sf::Color(255, 0, 255, 255);
+const sf::Color QUAD_TREE_COLOR = sf::Color(255, 255, 255, 255);
 
 class MainScreen : public State {
    public:
