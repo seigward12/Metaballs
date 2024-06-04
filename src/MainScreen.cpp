@@ -153,6 +153,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	verticalSideBar->addSpace(0.1f);
 
 	tgui::Button::Ptr button = tgui::Button::create("Apply");
+	button->onClick(&MainScreen::initializeObjects, this, -1);
 	button->setTextSize(BUTTON_TEXT_SIZE);
 	verticalSideBar->add(button);
 }
@@ -296,6 +297,8 @@ void MainScreen::moveObjects(const sf::Time& dt) {
 }
 
 void MainScreen::initializeObjects(int objectNumber) {
+	if (objectNumber < 0)
+		objectNumber = particles.size();
 	particles.clear();
 	for (unsigned short i = 0; i < objectNumber; i++) {
 		addParticle(sf::Vector2f((rand() % (int)boundary.width),
