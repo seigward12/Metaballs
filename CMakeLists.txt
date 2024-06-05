@@ -42,7 +42,7 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 add_subdirectory(src)
 ###
 
-target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI sfml-graphics) //TGUI needs to be linked before SFML
+target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI sfml-graphics) #TGUI needs to be linked before SFML
 
 if(WIN32)
     if(SFML_BUILD_AUDIO)
@@ -81,3 +81,4 @@ include(CPack)
 
 #TODO use ninja
 #TODO use ccache
+#TODO use shared lib in debug for faster compile

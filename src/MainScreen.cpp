@@ -9,8 +9,8 @@
 #include <TGUI/Widgets/ToggleButton.hpp>
 #include <TGUI/Widgets/VerticalLayout.hpp>
 
-const std::string STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
-const uint8_t BUTTON_TEXT_SIZE = 30;
+constexpr const char* STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
+constexpr uint8_t BUTTON_TEXT_SIZE = 30;
 
 sf::Vector2f getRandomVelocity(const float velocity) {
 	return velocity == 0.f

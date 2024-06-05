@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-const unsigned short DIVISION_SIZE = 4;
-const unsigned short LINES_PER_NODE = 3;
+constexpr unsigned short DIVISION_SIZE = 4;
+constexpr unsigned short LINES_PER_NODE = 3;
 
 template <class DataType>
 class QuadTree : public sf::Drawable {

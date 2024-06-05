@@ -2,7 +2,7 @@
 
 #include "StateManager.hpp"
 
-StateManager::StateManager(float width, float height)
+StateManager::StateManager(unsigned int width, unsigned int height)
 	: IsRunning{true},
 	  window(sf::VideoMode(width, height), "Metaballs", sf::Style::Default),
 	  state{nullptr},
@@ -18,8 +18,8 @@ StateManager::~StateManager() {
 	delete nextState;
 }
 
-void StateManager::changeState(State* state) {
-	nextState = state;
+void StateManager::changeState(State* _nextState) {
+	nextState = _nextState;
 }
 
 bool StateManager::running() {

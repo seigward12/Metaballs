@@ -3,9 +3,7 @@
 #include <sfml/Graphics.hpp>
 #include "State.hpp"
 
-const std::string APP_TITLE = "Diamant";
-const unsigned int FRAMERATE = 60;
-const sf::Time TIME_PER_FRAME = sf::seconds(1.f / FRAMERATE);
+constexpr const char* APP_TITLE = "Diamant";
 
 class StateManager {
    private:
@@ -20,7 +18,7 @@ class StateManager {
 	void applyChanges();
 
    public:
-	StateManager(float width, float height);
+	StateManager(unsigned int width, unsigned int height);
 	~StateManager();
 
 	void changeState(State* state);
@@ -31,7 +29,7 @@ class StateManager {
 	bool running();
 	void quit();
 	void run();
-	float width, height;
+	unsigned int width, height;
 
 	tgui::Gui gui;
 };
