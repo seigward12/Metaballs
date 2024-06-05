@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 project(Metaballs LANGUAGES CXX)
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -43,6 +41,7 @@ add_subdirectory(src)
 ###
 
 target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI sfml-graphics) #TGUI needs to be linked before SFML
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 if(WIN32)
     if(SFML_BUILD_AUDIO)
