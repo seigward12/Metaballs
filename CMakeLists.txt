@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.26)
 project(Metaballs LANGUAGES CXX)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -55,11 +55,11 @@ endif()
 
 
 add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-        ${PROJECT_SOURCE_DIR}/src/assets
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
-        COMMENT "Copying assets into binary directory ${PROJECT_BINARY_DIR}"
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+    ${PROJECT_SOURCE_DIR}/src/assets
+    $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
+    COMMENT "Copying assets into binary directory ${PROJECT_BINARY_DIR}"
 )
 install(DIRECTORY src/assets TYPE BIN)
 
