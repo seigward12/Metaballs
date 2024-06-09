@@ -1,6 +1,6 @@
 #pragma once
+#include <SFML/Graphics.hpp>
 #include <TGUI/Backend/SFML-Graphics.hpp>
-#include <sfml/Graphics.hpp>
 #include "State.hpp"
 
 constexpr const char* APP_TITLE = "Diamant";
