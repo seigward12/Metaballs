@@ -37,7 +37,7 @@ void Particle::update(const sf::Time& dt, const sf::FloatRect& boundary) {
 }
 
 void Particle::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	target.draw(shape);
+	target.draw(shape, states);
 }
 
 void Particle::setPosition(const sf::Vector2f position) {
