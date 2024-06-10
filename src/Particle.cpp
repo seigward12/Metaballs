@@ -104,8 +104,8 @@ void Particle::collideWithParticle(Particle& other,
 	if (isColliding(other)) {
 		sf::Vector2f distance = getCenterPosition() - other.getCenterPosition();
 		sf::Vector2f normal =
-			distance / static_cast<float>(distance.x * distance.x +
-										  distance.y * distance.y);
+			distance / static_cast<float>(sqrt(distance.x * distance.x +
+											   distance.y * distance.y));
 
 		const sf::Vector2f relativeVelocity =
 			getVelocity() - other.getVelocity();
