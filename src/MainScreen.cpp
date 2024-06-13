@@ -8,6 +8,7 @@
 #include <TGUI/Widgets/Label.hpp>
 #include <TGUI/Widgets/ToggleButton.hpp>
 #include <TGUI/Widgets/VerticalLayout.hpp>
+#include <asssets.hpp>
 
 constexpr const char* STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
 constexpr uint8_t BUTTON_TEXT_SIZE = 30;
@@ -27,7 +28,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 	setNewMaxRadius(radius);
 
-	bool result = font.loadFromFile("assets/fonts/arial.ttf");
+	bool result = font.loadFromFile(ARIAL_FONT);
 #ifdef _DEBUG
 	if (!result) {
 		std::cerr << "Error: loading font failed\n";
@@ -47,8 +48,8 @@ MainScreen::MainScreen(StateManager* stateManager)
 	mouseRect.setOrigin(temp.left + temp.width / 2, temp.top + temp.height / 2);
 
 	// set up tgui buttons
-	tgui::Font tguiFont("assets/fonts/arial.ttf");	// TODO charger a partir du
-													// sfml font ou le contraire
+	tgui::Font tguiFont(ARIAL_FONT);  // TODO charger a partir du
+									  // sfml font ou le contraire
 	tgui::Font::setGlobalFont(tguiFont);
 	tgui::VerticalLayout::Ptr verticalSideBar = tgui::VerticalLayout::create();
 	verticalSideBar->setPosition(boundary.getPosition().x + boundary.width, 0);

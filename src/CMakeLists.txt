@@ -5,3 +5,7 @@ target_sources(${PROJECT_NAME} PRIVATE
     Particle.cpp
     QuadTree.hpp
 )
+
+set(ASSETS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/assets/)
+configure_file(assets.hpp.in asssets.hpp @ONLY)
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
