@@ -24,14 +24,11 @@
 .vscode/
 .settings.json
 
-# SFML specific files
-/bin/
-/build/
-/Debug/
-/Release/
 
-# Dependency folders
+# folders
+/build/
 /lib/
+/.cache/
 
 # macOS specific files
 .DS_Store
