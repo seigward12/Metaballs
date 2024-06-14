@@ -55,7 +55,7 @@ install(TARGETS ${PROJECT_NAME})
 # adding warning flags
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4 /permissive-) # /WX
-else()
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wsign-conversion -Wold-style-cast)
 endif()
 
