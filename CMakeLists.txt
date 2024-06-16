@@ -62,7 +62,6 @@ endif()
 include(InstallRequiredSystemLibraries)
 include(CPack)
 
-# TODO use ninja
 # TODO use ccache
 # TODO use shared lib in debug for faster compile
 # TODO use findpackage for SFML and TGUI to try to find them before calling populate

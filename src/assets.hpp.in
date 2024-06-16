@@ -1,2 +1,3 @@
-#cmakedefine ASSETS_DIRECTORY "@ASSETS_DIRECTORY@"
-#define ARIAL_FONT "@ASSETS_DIRECTORY@fonts/arial.ttf"
+#pragma once
+#define ASSETS_DIRECTORY "${ASSETS_DIRECTORY}"
+#define ARIAL_FONT "${ASSETS_DIRECTORY}fonts/arial.ttf"
