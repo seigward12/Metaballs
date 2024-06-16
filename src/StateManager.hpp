@@ -11,7 +11,6 @@ class StateManager {
 	State* nextState;
 	sf::RenderWindow window;
 	bool IsRunning;
-	bool isFullscreen;
 
 	void processEvents();
 	void update(sf::Time dt);

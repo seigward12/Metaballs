@@ -1,11 +1,9 @@
-#include <iostream>
-
 #include "StateManager.hpp"
 
 StateManager::StateManager(unsigned int width, unsigned int height)
-	: IsRunning{true},
+	: state{nullptr},
 	  window(sf::VideoMode(width, height), "Metaballs", sf::Style::Default),
-	  state{nullptr},
+	  IsRunning{true},
 	  width{width},
 	  height{height} {
 	window.setKeyRepeatEnabled(false);
@@ -37,7 +35,6 @@ State* StateManager::getCurrentState() {
 void StateManager::run() {
 	applyChanges();
 	sf::Clock clock;
-	sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
 	while (window.isOpen()) {
 		sf::Time dt = clock.restart();
