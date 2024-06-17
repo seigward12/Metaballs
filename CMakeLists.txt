@@ -10,7 +10,12 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 # file(GLOB_RECURSE SOURCES_CPP CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 # file(GLOB_RECURSE SOURCES_HPP CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
 # add_executable(${PROJECT_NAME} ${SOURCES_CPP} ${SOURCES_HPP})
-add_executable(${PROJECT_NAME} src/main.cpp)
+if(WIN32)
+    add_executable(${PROJECT_NAME} WIN32 src/main.cpp)
+else()
+    add_executable(${PROJECT_NAME} src/main.cpp)
+endif()
+
 add_subdirectory(src)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
 
@@ -37,6 +42,10 @@ set(TGUI_BUILD_EXAMPLES FALSE)
 set(TGUI_BUILD_GUI_BUILDER FALSE)
 FetchContent_MakeAvailable(SFML TGUI)
 target_link_libraries(${PROJECT_NAME} PRIVATE TGUI::TGUI sfml-graphics) # TGUI needs to be linked before SFML
+
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE sfml-main)
+endif()
 
 if(WIN32)
     if(SFML_BUILD_AUDIO)
