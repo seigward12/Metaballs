@@ -11,7 +11,8 @@
 #include <asssets.hpp>
 
 constexpr const char* STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
-constexpr uint8_t BUTTON_TEXT_SIZE = 30;
+constexpr uint8_t BUTTON_TEXT_SIZE = 28;
+constexpr float BUTTONS_SPACING = 0.05f;
 
 sf::Vector2f getRandomVelocity(const float velocity) {
 	return velocity == 0.f
@@ -28,10 +29,16 @@ MainScreen::MainScreen(StateManager* stateManager)
 	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 	setNewMaxRadius(radius);
 
-	bool result = font.loadFromFile(ARIAL_FONT);
+	bool fontResult = font.loadFromFile(ARIAL_FONT);
+	bool shaderResult = metaballsShader.loadFromFile(
+		METABALLS_SHADER, sf::Shader::Type::Fragment);
 #ifdef _DEBUG
-	if (!result) {
-		std::cerr << "Error: loading font failed\n";
+	if (!fontResult) {
+		std::cerr << "Error: loading font failed" << std::endl;
+		exit(1);
+	}
+	if (!shaderResult) {
+		std::cerr << "Error: loading metaballs shader" << std::endl;
 		exit(1);
 	}
 #endif
@@ -72,7 +79,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	horizontalLayout->add(label);				  // index 0
 	horizontalLayout->add(particulesCountInput);  // index 1
 	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
 	tgui::EditBox::Ptr radiusInput =
@@ -82,7 +89,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	radiusInput->onReturnKeyPress(&MainScreen::setParticuleRadius, this);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Radius");
 	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
 	tgui::EditBox::Ptr speedInput =
@@ -92,7 +99,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	speedInput->onReturnKeyPress(&MainScreen::setParticuleSpeed, this);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
 	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
 	tgui::EditBox::Ptr nodeCapacityInput =
@@ -102,7 +109,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	nodeCapacityInput->onReturnKeyPress(&MainScreen::setTreeNodeCapacity, this);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
 	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	tgui::ToggleButton::Ptr toggle = tgui::ToggleButton::create();
 	toggle->onToggle([toggle, this](bool isPaused) {
@@ -112,7 +119,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	toggle->onToggle.emit(toggle.get(), isPaused);
 	toggle->setTextSize(BUTTON_TEXT_SIZE);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isShowingQuery) {
@@ -122,7 +129,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	});
 	toggle->onToggle.emit(toggle.get(), showMouseRect);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isShowingQuadTree) {
@@ -131,7 +138,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	});
 	toggle->onToggle.emit(toggle.get(), showQuadTree);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isBrushModeEnabled) {
@@ -141,7 +148,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	});
 	toggle->onToggle.emit(toggle.get(), brushMode);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	toggle = tgui::ToggleButton::copy(toggle);
 	toggle->onToggle([toggle, this](bool isCollisionEnabled) {
@@ -151,7 +158,17 @@ MainScreen::MainScreen(StateManager* stateManager)
 	});
 	toggle->onToggle.emit(toggle.get(), collisionEnabled);
 	verticalSideBar->add(toggle);
-	verticalSideBar->addSpace(0.1f);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
+
+	toggle = tgui::ToggleButton::copy(toggle);
+	toggle->onToggle([toggle, this](bool isShaderEnabled) {
+		toggle->setText(isShaderEnabled ? "Disable metaballs effect"
+										: "Enable metaballs effect");
+		this->enableShader(isShaderEnabled);
+	});
+	toggle->onToggle.emit(toggle.get(), collisionEnabled);
+	verticalSideBar->add(toggle);
+	verticalSideBar->addSpace(BUTTONS_SPACING);
 
 	tgui::Button::Ptr button = tgui::Button::create("Apply");
 	button->onClick(&MainScreen::initializeObjects, this, -1);
@@ -280,8 +297,11 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	if (showQuadTree)
 		target.draw(*quadTree, states);
 
+	if (shaderEnabled)
+		states.shader = &metaballsShader;
 	for (auto& myObject : particles)
 		target.draw(*myObject, states);
+	states.shader = nullptr;
 
 	if (showMouseRect)
 		target.draw(mouseRect, states);

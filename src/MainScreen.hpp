@@ -39,6 +39,7 @@ class MainScreen : public State {
 	void setQuadTreeVisibility(bool isVisible) { showQuadTree = isVisible; };
 	void enableBrushMode(bool enabled) { brushMode = enabled; };
 	void enableCollisions(bool enabled) { collisionEnabled = enabled; };
+	void enableShader(bool enabled) { shaderEnabled = enabled; };
 
    private:
 	bool isPaused = false;
@@ -47,6 +48,7 @@ class MainScreen : public State {
 	bool showQuadTree = false;
 	bool showMouseRect = false;
 	bool collisionEnabled = false;
+	bool shaderEnabled = false;
 
 	unsigned int treeNodeCapacity;
 	float radius;
@@ -68,6 +70,7 @@ class MainScreen : public State {
 	sf::Font font;
 	sf::Text fpsLabel;
 	sf::Clock fpsTimer;
+	sf::Shader metaballsShader;
 
 	tgui::EditBox::Ptr particulesCountInput;
 
