@@ -63,6 +63,7 @@ class MainScreen : public State {
 
 	std::unique_ptr<QuadTree<Particle>> quadTree;
 	sf::FloatRect boundary;
+	sf::RectangleShape boundaryShape;
 
 	std::vector<std::unique_ptr<Particle>> particles;
 	std::vector<Particle*> myCollisions;

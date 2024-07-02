@@ -25,6 +25,10 @@ MainScreen::MainScreen(StateManager* stateManager)
 	: State{stateManager}, radius{25}, treeNodeCapacity{4}, particleSpeed{100} {
 	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75f,
 							 stateManager->height - 20);
+	boundaryShape = sf::RectangleShape();
+	boundaryShape.setPosition(boundary.getPosition());
+	boundaryShape.setSize(boundary.getSize());
+	boundaryShape.setFillColor(sf::Color::Black);
 
 	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 	setNewMaxRadius(radius);
@@ -294,17 +298,32 @@ void MainScreen::update(const sf::Time& dt) {
 		selectedParticle->setColor(sf::Color::Yellow);
 
 	oldMousePosition = mousePosition;
+
+	if (shaderEnabled) {
+		std::array<sf::Glsl::Vec2, 50> ballPositions;
+		std::array<float, 50> ballRadius;
+		for (int i = 0; i < particles.size(); ++i) {
+			ballRadius[i] = particles[i]->getRadius();
+			ballPositions[i] = particles[i]->getCenterPosition();
+		}
+		metaballsShader.setUniformArray("ballPositions", ballPositions.data(),
+										50);
+		metaballsShader.setUniformArray("ballRadius", ballRadius.data(), 50);
+	}
 }
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	if (showQuadTree)
 		target.draw(*quadTree, states);
 
-	if (shaderEnabled)
+	if (shaderEnabled) {
 		states.shader = &metaballsShader;
-	for (auto& myObject : particles)
-		target.draw(*myObject, states);
-	states.shader = nullptr;
+		target.draw(boundaryShape, states);
+		states.shader = nullptr;
+	} else {
+		for (auto& myObject : particles)
+			target.draw(*myObject, states);
+	}
 
 	if (showMouseRect)
 		target.draw(mouseRect, states);
@@ -321,13 +340,14 @@ void MainScreen::moveObjects(const sf::Time& dt) {
 }
 
 void MainScreen::initializeObjects(int objectNumber) {
-	if (objectNumber < 0)
+	if (objectNumber < 0 || objectNumber > 50)
 		objectNumber = particles.size();
 	particles.clear();
 	for (unsigned short i = 0; i < objectNumber; i++) {
 		addParticle(sf::Vector2f((rand() % (int)boundary.width),
 								 ((rand() % (int)boundary.height))));
 	}
+	metaballsShader.setUniform("n_balls", objectNumber);
 }
 
 void MainScreen::brush() {
