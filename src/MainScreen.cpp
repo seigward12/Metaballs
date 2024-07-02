@@ -22,7 +22,7 @@ sf::Vector2f getRandomVelocity(const float velocity) {
 }
 
 MainScreen::MainScreen(StateManager* stateManager)
-	: State{stateManager}, radius{4}, treeNodeCapacity{4}, particleSpeed{100} {
+	: State{stateManager}, radius{25}, treeNodeCapacity{4}, particleSpeed{100} {
 	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75f,
 							 stateManager->height - 20);
 
@@ -43,6 +43,9 @@ MainScreen::MainScreen(StateManager* stateManager)
 	}
 #endif
 	fpsLabel.setFont(font);
+	metaballsShader.setUniform(
+		"u_resolution",
+		sf::Glsl::Vec2(stateManager->width, stateManager->height));
 
 	initializeObjects(10);
 
