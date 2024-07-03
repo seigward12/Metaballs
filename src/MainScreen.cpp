@@ -35,7 +35,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 
 	bool fontResult = font.loadFromFile(ARIAL_FONT);
 	bool shaderResult = metaballsShader.loadFromFile(
-		METABALLS_SHADER, sf::Shader::Type::Fragment);
+		METABALLS_FRAG_SHADER, sf::Shader::Type::Fragment);
 #ifdef _DEBUG
 	if (!fontResult) {
 		std::cerr << "Error: loading font failed" << std::endl;
@@ -305,9 +305,6 @@ void MainScreen::update(const sf::Time& dt) {
 		for (int i = 0; i < particles.size(); ++i) {
 			ballRadius[i] = particles[i]->getRadius();
 			ballPositions[i] = particles[i]->getCenterPosition();
-			ballPositions[i].y =
-				ballPositions[i].y + boundary.height -
-				2 * ballPositions[i].y;	 // inverser axe y pour glsl
 		}
 		metaballsShader.setUniformArray("ballPositions", ballPositions.data(),
 										50);

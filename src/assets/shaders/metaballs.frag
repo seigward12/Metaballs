@@ -1,3 +1,6 @@
+#version 330
+layout(origin_upper_left) in vec4 gl_FragCoord;
+
 const int MAX_BALLS=50;
 const float threshold=3.4;
 
@@ -5,8 +8,6 @@ uniform vec2 ballPositions[MAX_BALLS];
 uniform float ballRadius[MAX_BALLS];
 uniform int n_balls;
 uniform vec2 u_resolution;
-
-varying vec4 vertColor;
 
 void main() {
     float total = 0.;
