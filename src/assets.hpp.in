@@ -1,4 +1,5 @@
 #pragma once
 #define ASSETS_DIRECTORY "${ASSETS_DIRECTORY}"
 #define ARIAL_FONT "${ASSETS_DIRECTORY}fonts/arial.ttf"
-#define METABALLS_SHADER "${ASSETS_DIRECTORY}shaders/metaballs.glsl"
+#define METABALLS_FRAG_SHADER "${ASSETS_DIRECTORY}shaders/metaballs.frag"
+#define METABALLS_VERT_SHADER "${ASSETS_DIRECTORY}shaders/metaballs.vert"

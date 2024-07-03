@@ -34,8 +34,10 @@ MainScreen::MainScreen(StateManager* stateManager)
 	setNewMaxRadius(radius);
 
 	bool fontResult = font.loadFromFile(ARIAL_FONT);
-	bool shaderResult = metaballsShader.loadFromFile(
-		METABALLS_SHADER, sf::Shader::Type::Fragment);
+	// bool shaderResult = metaballsShader.loadFromFile(
+	// 	METABALLS_FRAG_SHADER, sf::Shader::Type::Fragment);
+	bool shaderResult = metaballsShader.loadFromFile(METABALLS_VERT_SHADER,
+													 METABALLS_FRAG_SHADER);
 #ifdef _DEBUG
 	if (!fontResult) {
 		std::cerr << "Error: loading font failed" << std::endl;
@@ -316,14 +318,19 @@ void MainScreen::update(const sf::Time& dt) {
 }
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	if (shaderEnabled) {
+	// if (shaderEnabled) {
+	// 	states.shader = &metaballsShader;
+	// 	target.draw(boundaryShape, states);
+	// 	states.shader = nullptr;
+	// } else {
+	// 	for (auto& myObject : particles)
+	// 		target.draw(*myObject, states);
+	// }
+	if (shaderEnabled)
 		states.shader = &metaballsShader;
-		target.draw(boundaryShape, states);
-		states.shader = nullptr;
-	} else {
-		for (auto& myObject : particles)
-			target.draw(*myObject, states);
-	}
+	for (auto& myObject : particles)
+		target.draw(*myObject, states);
+	states.shader = nullptr;
 
 	if (showQuadTree)
 		target.draw(*quadTree, states);
