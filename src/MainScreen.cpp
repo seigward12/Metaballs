@@ -305,6 +305,9 @@ void MainScreen::update(const sf::Time& dt) {
 		for (int i = 0; i < particles.size(); ++i) {
 			ballRadius[i] = particles[i]->getRadius();
 			ballPositions[i] = particles[i]->getCenterPosition();
+			ballPositions[i].y =
+				ballPositions[i].y + boundary.height -
+				2 * ballPositions[i].y;	 // inverser axe y pour glsl
 		}
 		metaballsShader.setUniformArray("ballPositions", ballPositions.data(),
 										50);
@@ -313,9 +316,6 @@ void MainScreen::update(const sf::Time& dt) {
 }
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	if (showQuadTree)
-		target.draw(*quadTree, states);
-
 	if (shaderEnabled) {
 		states.shader = &metaballsShader;
 		target.draw(boundaryShape, states);
@@ -324,6 +324,9 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 		for (auto& myObject : particles)
 			target.draw(*myObject, states);
 	}
+
+	if (showQuadTree)
+		target.draw(*quadTree, states);
 
 	if (showMouseRect)
 		target.draw(mouseRect, states);
