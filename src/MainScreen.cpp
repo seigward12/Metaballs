@@ -9,6 +9,8 @@
 #include <TGUI/Widgets/ToggleButton.hpp>
 #include <TGUI/Widgets/VerticalLayout.hpp>
 #include <asssets.hpp>
+#include <functional>
+#include <stack>
 
 constexpr const char* STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
 constexpr uint8_t BUTTON_TEXT_SIZE = 28;
@@ -300,27 +302,109 @@ void MainScreen::update(const sf::Time& dt) {
 	oldMousePosition = mousePosition;
 
 	if (shaderEnabled) {
-		std::array<sf::Glsl::Vec2, 50> ballPositions;
-		std::array<float, 50> ballRadius;
-		for (int i = 0; i < particles.size(); ++i) {
-			ballRadius[i] = particles[i]->getRadius();
-			ballPositions[i] = particles[i]->getCenterPosition();
+		particlesGroupsForShader.clear();
+		std::unordered_set<Particle*> visitedParticles;
+		std::set<Particle*> neighborsParticles;
+		std::function<sf::FloatRect(sf::FloatRect)> scaleParticle =
+			[](sf::FloatRect bounds) -> sf::FloatRect {
+			bounds.top -= bounds.height;
+			bounds.left -= bounds.width;
+			bounds.width *= 3;
+			bounds.height *= 3;
+			return bounds;
+		};
+		std::function<void(const Particle* const)> scaleAndQueryParticle =
+			[&](const Particle* const particleToScaleAndQuery) {
+				neighborsParticles.clear();
+				quadTree->query(particleToScaleAndQuery->getGlobalBounds(),
+								neighborsParticles, scaleParticle);
+			};
+		std::function<bool(Particle*)> isParticleVisited =
+			[&](Particle* askedParticle) {
+				return visitedParticles.find(askedParticle) !=
+					   visitedParticles.end();
+			};
+		for (auto& particle : particles) {
+			if (isParticleVisited(particle.get()))
+				continue;
+			visitedParticles.emplace(particle.get());
+
+			scaleAndQueryParticle(particle.get());
+
+			std::unordered_set<Particle*> particleGroup = {particle.get()};
+			std::stack<Particle*> particlesToProcess;
+			for (Particle* particleToInsert : neighborsParticles) {
+				particleGroup.insert(particleToInsert);
+				particlesToProcess.push(particleToInsert);
+			}
+			while (!particlesToProcess.empty()) {
+				Particle* queriedParticle = particlesToProcess.top();
+				particlesToProcess.pop();
+				if (isParticleVisited(queriedParticle))
+					continue;
+				visitedParticles.emplace(queriedParticle);
+				scaleAndQueryParticle(queriedParticle);
+				for (Particle* queriedParticle2 : neighborsParticles) {
+					if (!isParticleVisited(queriedParticle2)) {
+						particleGroup.insert(queriedParticle2);
+						particlesToProcess.push(queriedParticle2);
+					}
+				}
+			}
+			particlesGroupsForShader.push_back(particleGroup);
 		}
-		metaballsShader.setUniformArray("ballPositions", ballPositions.data(),
-										50);
-		metaballsShader.setUniformArray("ballRadius", ballRadius.data(), 50);
 	}
 }
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	if (shaderEnabled) {
-		states.shader = &metaballsShader;
-		target.draw(boundaryShape, states);
-		states.shader = nullptr;
-	} else {
-		for (auto& myObject : particles)
-			target.draw(*myObject, states);
+		for (auto& particleGroup : particlesGroupsForShader) {
+			float top =
+				(*std::min_element(particleGroup.begin(), particleGroup.end(),
+								   [](Particle* lhs, Particle* rhs) {
+									   return lhs->getGlobalBounds().top <
+											  rhs->getGlobalBounds().top;
+								   }))
+					->getGlobalBounds()
+					.top;
+			float left =
+				(*std::min_element(particleGroup.begin(), particleGroup.end(),
+								   [](Particle* lhs, Particle* rhs) {
+									   return lhs->getGlobalBounds().left <
+											  rhs->getGlobalBounds().left;
+								   }))
+					->getGlobalBounds()
+					.left;
+			Particle* rightParticle = (*std::max_element(
+				particleGroup.begin(), particleGroup.end(),
+				[](Particle* lhs, Particle* rhs) {
+					return lhs->getCenterPosition().x + lhs->getRadius() <
+						   rhs->getCenterPosition().x + rhs->getRadius();
+				}));
+			float right = rightParticle->getCenterPosition().x +
+						  rightParticle->getRadius();
+			Particle* downParticle = (*std::max_element(
+				particleGroup.begin(), particleGroup.end(),
+				[](Particle* lhs, Particle* rhs) {
+					return lhs->getCenterPosition().y + lhs->getRadius() <
+						   rhs->getCenterPosition().y + rhs->getRadius();
+				}));
+			float down =
+				downParticle->getCenterPosition().y + downParticle->getRadius();
+			sf::RectangleShape yo(sf::Vector2f(right - left, down - top));
+			yo.setPosition(sf::Vector2f(left, top));
+			yo.setFillColor(sf::Color(120, 120, 120, 120));
+			target.draw(yo, states);
+			///
+			// states.shader = &metaballsShader;
+			// target.draw(boundaryShape, states);
+			// states.shader = nullptr;
+		}
 	}
+	// else {
+	for (auto& myObject : particles)
+		target.draw(*myObject, states);
+	// }
 
 	if (showQuadTree)
 		target.draw(*quadTree, states);
@@ -340,7 +424,7 @@ void MainScreen::moveObjects(const sf::Time& dt) {
 }
 
 void MainScreen::initializeObjects(int objectNumber) {
-	if (objectNumber < 0 || objectNumber > 50)
+	if (objectNumber < 0)
 		objectNumber = particles.size();
 	particles.clear();
 	for (unsigned short i = 0; i < objectNumber; i++) {

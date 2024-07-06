@@ -1,7 +1,7 @@
 #version 330
 layout(origin_upper_left) in vec4 gl_FragCoord;
 
-const int MAX_BALLS=50;
+const int MAX_BALLS=8;
 
 uniform vec2 ballPositions[MAX_BALLS];
 uniform float ballRadius[MAX_BALLS];

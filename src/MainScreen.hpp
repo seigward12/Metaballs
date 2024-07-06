@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <unordered_set>
 #include <vector>
 
 #include <memory>
@@ -19,6 +20,8 @@ const sf::Color DEFAULT_COLOR = sf::Color(0, 255, 0, 255);
 const sf::Color COLLISION_COLOR = sf::Color(255, 0, 0, 255);
 const sf::Color MOUSE_RECT_COLOR = sf::Color(255, 0, 255, 255);
 const sf::Color QUAD_TREE_COLOR = sf::Color(255, 255, 255, 255);
+
+const size_t SHADER_PARTICLE_GROUP_SIZE = 8;
 
 class MainScreen : public State {
    public:
@@ -66,12 +69,15 @@ class MainScreen : public State {
 	sf::RectangleShape boundaryShape;
 
 	std::vector<std::unique_ptr<Particle>> particles;
-	std::vector<Particle*> myCollisions;
+	std::set<Particle*> myCollisions;
 
 	sf::Font font;
 	sf::Text fpsLabel;
 	sf::Clock fpsTimer;
+
 	sf::Shader metaballsShader;
+	// std::vector<std::array<Particle*, SHADER_PARTICLE_GROUP_SIZE>>
+	std::vector<std::unordered_set<Particle*>> particlesGroupsForShader;
 
 	tgui::EditBox::Ptr particulesCountInput;
 

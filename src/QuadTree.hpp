@@ -1,8 +1,9 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <functional>
 #include <memory>
-#include <vector>
+#include <set>
 
 constexpr unsigned short DIVISION_SIZE = 4;
 constexpr unsigned short LINES_PER_NODE = 3;
@@ -14,7 +15,11 @@ class QuadTree : public sf::Drawable {
 	~QuadTree();
 	void reset();
 	bool insert(DataType* object);
-	void query(sf::FloatRect range, std::vector<DataType*>& objectsFound);
+	void query(
+		sf::FloatRect range,
+		std::set<DataType*>& objectsFound,
+		std::function<sf::FloatRect(sf::FloatRect)> rangeModification =
+			[](sf::FloatRect range) { return range; });
 
    private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -127,8 +132,11 @@ bool QuadTree<DataType>::insert(DataType* object) {
 }
 
 template <class DataType>
-void QuadTree<DataType>::query(sf::FloatRect range,
-							   std::vector<DataType*>& objectsFound) {
+void QuadTree<DataType>::query(
+	sf::FloatRect range,
+	std::set<DataType*>& objectsFound,
+	std::function<sf::FloatRect(sf::FloatRect)> rangeModification) {
+	range = rangeModification(range);
 	if (!boundary.intersects(range))
 		return;
 
@@ -139,8 +147,9 @@ void QuadTree<DataType>::query(sf::FloatRect range,
 		southEast->query(range, objectsFound);
 	} else {
 		for (DataType* object : objects) {
-			if (range.intersects(object->getGlobalBounds())) {
-				objectsFound.push_back(object);
+			if (range.intersects(
+					rangeModification(object->getGlobalBounds()))) {
+				objectsFound.insert(object);
 			}
 		}
 	}
