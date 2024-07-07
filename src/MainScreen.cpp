@@ -17,7 +17,7 @@ constexpr uint8_t BUTTON_TEXT_SIZE = 28;
 constexpr float BUTTONS_SPACING = 0.05f;
 
 BoundsTransform::BoundsTransformFct scaleParticle =
-	[](const sf::FloatRect& bounds) -> const sf::FloatRect& {
+	[](const sf::FloatRect& bounds) -> sf::FloatRect {
 	sf::FloatRect trasformedBounds(bounds);
 	trasformedBounds.top -= bounds.height;
 	trasformedBounds.left -= bounds.width;

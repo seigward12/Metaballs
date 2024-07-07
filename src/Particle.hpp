@@ -3,8 +3,7 @@
 #include <functional>
 
 namespace BoundsTransform {
-typedef std::function<const sf::FloatRect&(const sf::FloatRect&)>
-	BoundsTransformFct;
+typedef std::function<sf::FloatRect(const sf::FloatRect&)> BoundsTransformFct;
 }  // namespace BoundsTransform
 
 class Particle : public sf::Drawable {
