@@ -16,6 +16,16 @@ constexpr const char* STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
 constexpr uint8_t BUTTON_TEXT_SIZE = 28;
 constexpr float BUTTONS_SPACING = 0.05f;
 
+BoundsTransform::BoundsTransformFct scaleParticle =
+	[](const sf::FloatRect& bounds) -> const sf::FloatRect& {
+	sf::FloatRect trasformedBounds(bounds);
+	trasformedBounds.top -= bounds.height;
+	trasformedBounds.left -= bounds.width;
+	trasformedBounds.width *= 3;
+	trasformedBounds.height *= 3;
+	return trasformedBounds;
+};
+
 sf::Vector2f getRandomVelocity(const float velocity) {
 	return velocity == 0.f
 			   ? sf::Vector2f()
@@ -302,22 +312,15 @@ void MainScreen::update(const sf::Time& dt) {
 	oldMousePosition = mousePosition;
 
 	if (shaderEnabled) {
+		Particle::setGlobalBoundsTransform(scaleParticle);
 		particlesGroupsForShader.clear();
 		std::unordered_set<Particle*> visitedParticles;
 		std::set<Particle*> neighborsParticles;
-		std::function<sf::FloatRect(sf::FloatRect)> scaleParticle =
-			[](sf::FloatRect bounds) -> sf::FloatRect {
-			bounds.top -= bounds.height;
-			bounds.left -= bounds.width;
-			bounds.width *= 3;
-			bounds.height *= 3;
-			return bounds;
-		};
 		std::function<void(const Particle* const)> scaleAndQueryParticle =
 			[&](const Particle* const particleToScaleAndQuery) {
 				neighborsParticles.clear();
 				quadTree->query(particleToScaleAndQuery->getGlobalBounds(),
-								neighborsParticles, scaleParticle);
+								neighborsParticles);
 			};
 		std::function<bool(Particle*)> isParticleVisited =
 			[&](Particle* askedParticle) {
@@ -353,6 +356,7 @@ void MainScreen::update(const sf::Time& dt) {
 			}
 			particlesGroupsForShader.push_back(particleGroup);
 		}
+		Particle::resetGlobalBoundsTransfom();
 	}
 }
 
@@ -400,11 +404,17 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 			// target.draw(boundaryShape, states);
 			// states.shader = nullptr;
 		}
+		for (auto& myObject : particles) {
+			sf::FloatRect a = scaleParticle(myObject->getGlobalBounds());
+			sf::RectangleShape b(sf::Vector2f(a.width, a.height));
+			b.setFillColor(sf::Color(255, 0, 0, 60));
+			b.setPosition(a.getPosition());
+			target.draw(b, states);
+		}
+	} else {
+		for (auto& myObject : particles)
+			target.draw(*myObject, states);
 	}
-	// else {
-	for (auto& myObject : particles)
-		target.draw(*myObject, states);
-	// }
 
 	if (showQuadTree)
 		target.draw(*quadTree, states);

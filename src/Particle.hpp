@@ -1,5 +1,11 @@
 #pragma once
 #include <SFML/Graphics.hpp>
+#include <functional>
+
+namespace BoundsTransform {
+typedef std::function<const sf::FloatRect&(const sf::FloatRect&)>
+	BoundsTransformFct;
+}  // namespace BoundsTransform
 
 class Particle : public sf::Drawable {
    public:
@@ -25,10 +31,16 @@ class Particle : public sf::Drawable {
 
 	bool isColliding(const Particle& other) const;
 
+	static void setGlobalBoundsTransform(
+		BoundsTransform::BoundsTransformFct& boundsModification);
+	static void resetGlobalBoundsTransfom();
+
    private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	sf::CircleShape shape;
 	sf::Vector2f velocity;
 	float massInverse;
+
+	static BoundsTransform::BoundsTransformFct& boundModification;
 };
