@@ -41,5 +41,5 @@ class Particle : public sf::Drawable {
 	sf::Vector2f velocity;
 	float massInverse;
 
-	static BoundsTransform::BoundsTransformFct& boundModification;
+	static BoundsTransform::BoundsTransformFct* boundModification;
 };

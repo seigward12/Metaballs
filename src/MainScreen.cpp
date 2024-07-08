@@ -21,8 +21,8 @@ BoundsTransform::BoundsTransformFct scaleParticle =
 	sf::FloatRect trasformedBounds(bounds);
 	trasformedBounds.top -= bounds.height;
 	trasformedBounds.left -= bounds.width;
-	trasformedBounds.width *= 3;
-	trasformedBounds.height *= 3;
+	trasformedBounds.width *= 3.0f;
+	trasformedBounds.height *= 3.0f;
 	return trasformedBounds;
 };
 
@@ -395,10 +395,14 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 				}));
 			float down =
 				downParticle->getCenterPosition().y + downParticle->getRadius();
-			sf::RectangleShape yo(sf::Vector2f(right - left, down - top));
-			yo.setPosition(sf::Vector2f(left, top));
-			yo.setFillColor(sf::Color(120, 120, 120, 120));
-			target.draw(yo, states);
+			sf::RectangleShape groupMaxRectangle(
+				sf::Vector2f(right - left, down - top));
+			groupMaxRectangle.setPosition(sf::Vector2f(left, top));
+			sf::FloatRect groupBounds = groupMaxRectangle.getGlobalBounds();
+			sf::FloatRect firstBound =
+				(*particleGroup.begin())->getGlobalBounds();
+			groupMaxRectangle.setFillColor(sf::Color(120, 120, 120, 120));
+			target.draw(groupMaxRectangle, states);
 			///
 			// states.shader = &metaballsShader;
 			// target.draw(boundaryShape, states);
@@ -407,7 +411,7 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 		for (auto& myObject : particles) {
 			sf::FloatRect a = scaleParticle(myObject->getGlobalBounds());
 			sf::RectangleShape b(sf::Vector2f(a.width, a.height));
-			b.setFillColor(sf::Color(255, 0, 0, 60));
+			b.setFillColor(sf::Color(255, 0, 0, 50));
 			b.setPosition(a.getPosition());
 			target.draw(b, states);
 		}
