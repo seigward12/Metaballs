@@ -202,8 +202,6 @@ void MainScreen::processEvent(const sf::Event& event) {
 		case sf::Event::MouseButtonPressed:
 			if (event.mouseButton.button == sf::Mouse::Left)
 				pressed = true;
-			if (!brushMode)
-				selectParticle();
 			break;
 
 		case sf::Event::MouseButtonReleased:
@@ -226,6 +224,11 @@ void MainScreen::processEvent(const sf::Event& event) {
 }
 
 void MainScreen::update(const sf::Time& dt) {
+	// 3 sections
+	// -1 quadtree clean, can search particles, but not modify their position
+	// -2 modify particle positions, but cant search quadtree because positions
+	// 	modified/ or find a way to modify quadtree to update positions
+	// -3 rebuildQuadTree
 	if (fpsTimer.getElapsedTime().asSeconds() >= 1) {
 		fpsTimer.restart();
 		fpsLabel.setString("FPS: " + std::to_string((int)(1 / dt.asSeconds())));
@@ -234,12 +237,16 @@ void MainScreen::update(const sf::Time& dt) {
 	if (pressed) {
 		if (brushMode) {
 			brush();
-		} else if (selectedParticle != nullptr) {
-			sf::Vector2f velocity =
-				sf::Vector2f(mousePosition.x - oldMousePosition.x,
-							 mousePosition.y - oldMousePosition.y);
-			velocity /= dt.asSeconds();
-			selectedParticle->setVelocity(velocity);
+		} else {
+			if (selectedParticle == nullptr) {
+				selectParticle();
+			} else {
+				sf::Vector2f velocity =
+					sf::Vector2f(mousePosition.x - oldMousePosition.x,
+								 mousePosition.y - oldMousePosition.y);
+				velocity /= dt.asSeconds();
+				selectedParticle->setVelocity(velocity);
+			}
 		}
 	}
 
