@@ -3,10 +3,14 @@
 
 using namespace BoundsTransform;
 
+namespace BoundsTransform {
 BoundsTransformFct sameGlobalBounds =
-	[](const sf::FloatRect& bounds) -> const sf::FloatRect& { return bounds; };
-BoundsTransform::BoundsTransformFct* Particle::boundModification =
-	&sameGlobalBounds;
+	[](const sf::FloatRect& bounds) -> sf::FloatRect { return bounds; };
+// peut également utiliser une fonction normale
+// sf::FloatRect sameGlobalBounds(const sf::FloatRect& bounds) {
+}  // namespace BoundsTransform
+BoundsTransform::BoundsTransformFct Particle::boundModification =
+	BoundsTransform::sameGlobalBounds;
 
 Particle::Particle(const float radius) {
 	setRadius(radius);
@@ -93,7 +97,8 @@ sf::CircleShape Particle::getShape() const {
 }
 
 sf::FloatRect Particle::getGlobalBounds() const {
-	return boundModification->operator()(shape.getGlobalBounds());
+	// return boundModification(shape.getGlobalBounds());
+	return boundModification(shape.getGlobalBounds());
 }
 
 bool Particle::isColliding(const Particle& other) const {
@@ -135,9 +140,9 @@ void Particle::collideWithParticle(Particle& other,
 }
 
 void Particle::setGlobalBoundsTransform(
-	BoundsTransformFct& _boundsModification) {
-	boundModification = &_boundsModification;
+	BoundsTransformFct _boundsModification) {
+	boundModification = _boundsModification;
 }
 void Particle::resetGlobalBoundsTransfom() {
-	boundModification = &sameGlobalBounds;
+	boundModification = BoundsTransform::sameGlobalBounds;
 }

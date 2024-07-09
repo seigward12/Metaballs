@@ -16,7 +16,8 @@ constexpr const char* STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
 constexpr uint8_t BUTTON_TEXT_SIZE = 28;
 constexpr float BUTTONS_SPACING = 0.05f;
 
-BoundsTransform::BoundsTransformFct scaleParticle =
+namespace BoundsTransform {
+BoundsTransformFct scaleParticle =
 	[](const sf::FloatRect& bounds) -> sf::FloatRect {
 	sf::FloatRect trasformedBounds(bounds);
 	trasformedBounds.top -= bounds.height;
@@ -25,6 +26,7 @@ BoundsTransform::BoundsTransformFct scaleParticle =
 	trasformedBounds.height *= 3.0f;
 	return trasformedBounds;
 };
+}  // namespace BoundsTransform
 
 sf::Vector2f getRandomVelocity(const float velocity) {
 	return velocity == 0.f
@@ -312,7 +314,7 @@ void MainScreen::update(const sf::Time& dt) {
 	oldMousePosition = mousePosition;
 
 	if (shaderEnabled) {
-		Particle::setGlobalBoundsTransform(scaleParticle);
+		Particle::setGlobalBoundsTransform(BoundsTransform::scaleParticle);
 		particlesGroupsForShader.clear();
 		std::unordered_map<Particle*, std::unordered_set<Particle*>*>
 			visitedParticles;
@@ -424,7 +426,8 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 			// states.shader = nullptr;
 		}
 		for (auto& myObject : particles) {
-			sf::FloatRect a = scaleParticle(myObject->getGlobalBounds());
+			sf::FloatRect a =
+				BoundsTransform::scaleParticle(myObject->getGlobalBounds());
 			sf::RectangleShape b(sf::Vector2f(a.width, a.height));
 			b.setFillColor(sf::Color(255, 0, 0, 50));
 			b.setPosition(a.getPosition());

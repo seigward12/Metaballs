@@ -3,7 +3,7 @@
 #include <functional>
 
 namespace BoundsTransform {
-typedef std::function<sf::FloatRect(const sf::FloatRect&)> BoundsTransformFct;
+typedef sf::FloatRect (*BoundsTransformFct)(const sf::FloatRect&);
 }  // namespace BoundsTransform
 
 class Particle : public sf::Drawable {
@@ -31,7 +31,7 @@ class Particle : public sf::Drawable {
 	bool isColliding(const Particle& other) const;
 
 	static void setGlobalBoundsTransform(
-		BoundsTransform::BoundsTransformFct& boundsModification);
+		BoundsTransform::BoundsTransformFct boundsModification);
 	static void resetGlobalBoundsTransfom();
 
    private:
@@ -41,5 +41,5 @@ class Particle : public sf::Drawable {
 	sf::Vector2f velocity;
 	float massInverse;
 
-	static BoundsTransform::BoundsTransformFct* boundModification;
+	static BoundsTransform::BoundsTransformFct boundModification;
 };
