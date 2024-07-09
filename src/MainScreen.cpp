@@ -322,7 +322,8 @@ void MainScreen::update(const sf::Time& dt) {
 					break;
 				}
 			}
-			if (firstAlreadyVisitedParticle == nullptr) {
+			if (firstAlreadyVisitedParticle ==
+				nullptr) {	// fontionne parceque le query retourne la même particule
 				particlesGroupsForShader.emplace(
 					particle, std::unordered_set<Particle*>());
 				particleGroup = &particlesGroupsForShader.at(particle);
