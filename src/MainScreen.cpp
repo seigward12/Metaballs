@@ -325,14 +325,9 @@ void MainScreen::update(const sf::Time& dt) {
 				quadTree->query(particleToScaleAndQuery->getGlobalBounds(),
 								neighbors);
 			};
-		std::function<bool(Particle*)> isParticleVisited =
-			[&](Particle* askedParticle) {
-				return visitedParticles.find(askedParticle) !=
-					   visitedParticles.end();
-			};
 		for (auto& particlePtr : particles) {
 			Particle* particle = particlePtr.get();
-			if (isParticleVisited(particle))
+			if (visitedParticles.contains(particle))
 				continue;
 
 			scaleAndQueryParticle(particle);
@@ -340,7 +335,7 @@ void MainScreen::update(const sf::Time& dt) {
 			Particle* firstAlreadyVisitedParticle = nullptr;
 			std::unordered_set<Particle*>* particleGroup = nullptr;
 			for (Particle* neighbor : neighbors) {
-				if (isParticleVisited(neighbor)) {
+				if (visitedParticles.contains(neighbor)) {
 					firstAlreadyVisitedParticle = neighbor;
 					break;
 				}
@@ -354,15 +349,15 @@ void MainScreen::update(const sf::Time& dt) {
 					visitedParticles.at(firstAlreadyVisitedParticle);
 
 			for (Particle* neighbor : neighbors) {
-				if (isParticleVisited(neighbor)) {
+				if (visitedParticles.contains(neighbor)) {
 					std::unordered_set<Particle*>* neighborGroup =
 						visitedParticles.at(neighbor);
 					if (neighborGroup == particleGroup)
 						continue;
 					Particle* groupToRemoveKey = nullptr;
 					for (Particle* neighborOfNeighbor : *neighborGroup) {
-						if (particlesGroupsForShader.find(neighborOfNeighbor) !=
-							particlesGroupsForShader.end())
+						if (particlesGroupsForShader.contains(
+								neighborOfNeighbor))
 							groupToRemoveKey = neighborOfNeighbor;
 						visitedParticles[neighborOfNeighbor] = neighborGroup;
 					}

@@ -17,7 +17,7 @@ else()
 endif()
 
 add_subdirectory(src)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
 # adding dependencies
 include(FetchContent)
