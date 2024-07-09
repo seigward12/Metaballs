@@ -69,7 +69,6 @@ class MainScreen : public State {
 	sf::RectangleShape boundaryShape;
 
 	std::vector<std::unique_ptr<Particle>> particles;
-	std::unordered_set<Particle*> myCollisions;
 
 	sf::Font font;
 	sf::Text fpsLabel;

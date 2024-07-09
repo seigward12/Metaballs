@@ -260,9 +260,10 @@ void MainScreen::update(const sf::Time& dt) {
 	}
 
 	for (auto& particle : particles) {
-		quadTree->query(particle->getGlobalBounds(), myCollisions);
+		std::unordered_set<Particle*> collisions;
+		quadTree->query(particle->getGlobalBounds(), collisions);
 
-		for (Particle* myCollision : myCollisions) {
+		for (Particle* myCollision : collisions) {
 			if (particle.get() == myCollision)
 				continue;
 
@@ -275,18 +276,15 @@ void MainScreen::update(const sf::Time& dt) {
 				}
 			}
 		}
-
-		myCollisions.clear();
 	}
 
 	if (showMouseRect) {
 		mouseRect.setPosition(mousePosition);
-		quadTree->query(mouseRect.getGlobalBounds(), myCollisions);
+		std::unordered_set<Particle*> ParticlesInMouseRect;
+		quadTree->query(mouseRect.getGlobalBounds(), ParticlesInMouseRect);
 
-		for (const auto& myCollision : myCollisions)
+		for (const auto& myCollision : ParticlesInMouseRect)
 			myCollision->setColor(MOUSE_RECT_COLOR);
-
-		myCollisions.clear();
 	}
 
 	if (selectedParticle != nullptr)
@@ -465,11 +463,13 @@ void MainScreen::selectParticle() {
 		mousePosition.x - highestRadius, mousePosition.y - highestRadius,
 		highestRadius * 2, highestRadius * 2);
 
-	quadTree->query(mouseRect, myCollisions);
+	std::unordered_set<Particle*> selectedParticles;
 
-	if (!myCollisions.empty()) {
+	quadTree->query(mouseRect, selectedParticles);
+
+	if (!selectedParticles.empty()) {
 		float minDistanceSquare = highestRadius * highestRadius;
-		for (Particle* particle : myCollisions) {
+		for (Particle* particle : selectedParticles) {
 			sf::Vector2f distance =
 				particle->getCenterPosition() - mousePosition;
 			float distanceSquare =
@@ -485,7 +485,6 @@ void MainScreen::selectParticle() {
 			selectedParticle->setPosition(mousePosition);
 			selectedParticle->setInfiniteMass(true);
 		}
-		myCollisions.clear();
 	}
 }
 
