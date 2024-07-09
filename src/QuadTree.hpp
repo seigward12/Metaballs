@@ -2,8 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include <set>
-
+#include <unordered_set>
 constexpr unsigned short DIVISION_SIZE = 4;
 constexpr unsigned short LINES_PER_NODE = 3;
 
@@ -14,7 +13,8 @@ class QuadTree : public sf::Drawable {
 	~QuadTree();
 	void reset();
 	bool insert(DataType* object);
-	void query(const sf::FloatRect& range, std::set<DataType*>& objectsFound);
+	void query(const sf::FloatRect& range,
+			   std::unordered_set<DataType*>& objectsFound);
 
    private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -128,7 +128,7 @@ bool QuadTree<DataType>::insert(DataType* object) {
 
 template <class DataType>
 void QuadTree<DataType>::query(const sf::FloatRect& range,
-							   std::set<DataType*>& objectsFound) {
+							   std::unordered_set<DataType*>& objectsFound) {
 	if (!boundary.intersects(range))
 		return;
 

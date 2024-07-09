@@ -69,7 +69,7 @@ class MainScreen : public State {
 	sf::RectangleShape boundaryShape;
 
 	std::vector<std::unique_ptr<Particle>> particles;
-	std::set<Particle*> myCollisions;
+	std::unordered_set<Particle*> myCollisions;
 
 	sf::Font font;
 	sf::Text fpsLabel;
@@ -77,7 +77,8 @@ class MainScreen : public State {
 
 	sf::Shader metaballsShader;
 	// std::vector<std::array<Particle*, SHADER_PARTICLE_GROUP_SIZE>>
-	std::vector<std::unordered_set<Particle*>> particlesGroupsForShader;
+	std::unordered_map<Particle*, std::unordered_set<Particle*>>
+		particlesGroupsForShader;
 
 	tgui::EditBox::Ptr particulesCountInput;
 

@@ -314,47 +314,62 @@ void MainScreen::update(const sf::Time& dt) {
 	if (shaderEnabled) {
 		Particle::setGlobalBoundsTransform(scaleParticle);
 		particlesGroupsForShader.clear();
-		std::unordered_set<Particle*> visitedParticles;
-		std::set<Particle*> neighborsParticles;
+		std::unordered_map<Particle*, std::unordered_set<Particle*>*>
+			visitedParticles;
+		std::unordered_set<Particle*> neighbors;
 		std::function<void(const Particle* const)> scaleAndQueryParticle =
 			[&](const Particle* const particleToScaleAndQuery) {
-				neighborsParticles.clear();
+				neighbors.clear();
 				quadTree->query(particleToScaleAndQuery->getGlobalBounds(),
-								neighborsParticles);
+								neighbors);
 			};
 		std::function<bool(Particle*)> isParticleVisited =
 			[&](Particle* askedParticle) {
 				return visitedParticles.find(askedParticle) !=
 					   visitedParticles.end();
 			};
-		for (auto& particle : particles) {
-			if (isParticleVisited(particle.get()))
+		for (auto& particlePtr : particles) {
+			Particle* particle = particlePtr.get();
+			if (isParticleVisited(particle))
 				continue;
-			visitedParticles.emplace(particle.get());
 
-			scaleAndQueryParticle(particle.get());
+			scaleAndQueryParticle(particle);
 
-			std::unordered_set<Particle*> particleGroup = {particle.get()};
-			std::stack<Particle*> particlesToProcess;
-			for (Particle* particleToInsert : neighborsParticles) {
-				particleGroup.insert(particleToInsert);
-				particlesToProcess.push(particleToInsert);
-			}
-			while (!particlesToProcess.empty()) {
-				Particle* queriedParticle = particlesToProcess.top();
-				particlesToProcess.pop();
-				if (isParticleVisited(queriedParticle))
-					continue;
-				visitedParticles.emplace(queriedParticle);
-				scaleAndQueryParticle(queriedParticle);
-				for (Particle* queriedParticle2 : neighborsParticles) {
-					if (!isParticleVisited(queriedParticle2)) {
-						particleGroup.insert(queriedParticle2);
-						particlesToProcess.push(queriedParticle2);
-					}
+			Particle* firstAlreadyVisitedParticle = nullptr;
+			std::unordered_set<Particle*>* particleGroup = nullptr;
+			for (Particle* neighbor : neighbors) {
+				if (isParticleVisited(neighbor)) {
+					firstAlreadyVisitedParticle = neighbor;
+					break;
 				}
 			}
-			particlesGroupsForShader.push_back(particleGroup);
+			if (firstAlreadyVisitedParticle == nullptr) {
+				particlesGroupsForShader.emplace(
+					particle, std::unordered_set<Particle*>());
+				particleGroup = &particlesGroupsForShader.at(particle);
+			} else
+				particleGroup =
+					visitedParticles.at(firstAlreadyVisitedParticle);
+
+			for (Particle* neighbor : neighbors) {
+				if (isParticleVisited(neighbor)) {
+					std::unordered_set<Particle*>* neighborGroup =
+						visitedParticles.at(neighbor);
+					if (neighborGroup == particleGroup)
+						continue;
+					Particle* groupToRemoveKey = nullptr;
+					for (Particle* neighborOfNeighbor : *neighborGroup) {
+						if (particlesGroupsForShader.find(neighborOfNeighbor) !=
+							particlesGroupsForShader.end())
+							groupToRemoveKey = neighborOfNeighbor;
+						visitedParticles[neighborOfNeighbor] = neighborGroup;
+					}
+					particlesGroupsForShader.erase(groupToRemoveKey);
+				} else {
+					visitedParticles.emplace(neighbor, particleGroup);
+					particleGroup->insert(neighbor);
+				}
+			}
 		}
 		Particle::resetGlobalBoundsTransfom();
 	}
@@ -362,7 +377,7 @@ void MainScreen::update(const sf::Time& dt) {
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	if (shaderEnabled) {
-		for (auto& particleGroup : particlesGroupsForShader) {
+		for (const auto& [_, particleGroup] : particlesGroupsForShader) {
 			float top =
 				(*std::min_element(particleGroup.begin(), particleGroup.end(),
 								   [](Particle* lhs, Particle* rhs) {
