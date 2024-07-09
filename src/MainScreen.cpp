@@ -216,25 +216,6 @@ void MainScreen::processEvent(const sf::Event& event) {
 			}
 			break;
 
-		case sf::Event::KeyPressed:
-			switch (event.key.code) {
-				case sf::Keyboard::Space:
-					isPaused = !isPaused;
-					break;
-
-				case sf::Keyboard::M:
-					showMouseRect = !showMouseRect;
-					break;
-
-				case sf::Keyboard::Return:
-					// buttons[0].getOnAction()();
-					break;
-
-				default:
-					break;
-			}
-			break;
-
 		case sf::Event::Resized:
 			resize(sf::Vector2f(event.size.width, event.size.height));
 			break;
