@@ -2,7 +2,9 @@
 
 StateManager::StateManager(unsigned int width, unsigned int height)
 	: state{nullptr},
-	  window(sf::VideoMode(width, height), "Metaballs", sf::Style::Default),
+	  window(sf::VideoMode(width, height),
+			 "Metaballs",
+			 sf::Style::Titlebar | sf::Style::Close),
 	  IsRunning{true},
 	  width{width},
 	  height{height} {

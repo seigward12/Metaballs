@@ -216,10 +216,6 @@ void MainScreen::processEvent(const sf::Event& event) {
 			}
 			break;
 
-		case sf::Event::Resized:
-			resize(sf::Vector2f(event.size.width, event.size.height));
-			break;
-
 		case sf::Event::MouseMoved:
 			mousePosition = sf::Vector2f(event.mouseMove.x, event.mouseMove.y);
 			break;
@@ -485,28 +481,6 @@ void MainScreen::selectParticle() {
 			selectedParticle->setPosition(mousePosition);
 			selectedParticle->setInfiniteMass(true);
 		}
-	}
-}
-
-void MainScreen::resize(const sf::Vector2f& dimensions) {
-	const sf::FloatRect visibleArea =
-		sf::FloatRect(0, 0, dimensions.x, dimensions.y);
-	stateManager->setView(sf::View(visibleArea));
-
-	stateManager->width = dimensions.x;
-	stateManager->height = dimensions.y;
-	boundary = sf::FloatRect(10, 10, stateManager->width * 0.75,
-							 stateManager->height - 20);
-	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
-
-	for (auto& myObject : particles) {
-		if (myObject->getCenterPosition().x > boundary.width)
-			myObject->setPosition(
-				sf::Vector2f(boundary.width, myObject->getCenterPosition().y));
-
-		if (myObject->getCenterPosition().y > boundary.height)
-			myObject->setPosition(
-				sf::Vector2f(myObject->getCenterPosition().x, boundary.height));
 	}
 }
 

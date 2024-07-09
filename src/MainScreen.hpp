@@ -85,7 +85,6 @@ class MainScreen : public State {
 	void moveObjects(const sf::Time& dt);
 	void addParticle(const sf::Vector2f& position);
 	void brush();
-	void resize(const sf::Vector2f& dimensions);
 	void updateSelectedParticle(const sf::Vector2f& position);
 	void selectParticle();
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
