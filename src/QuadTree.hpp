@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
+#include <unordered_map>
 #include <unordered_set>
 constexpr unsigned short DIVISION_SIZE = 4;
 constexpr unsigned short LINES_PER_NODE = 3;
@@ -11,23 +12,33 @@ class QuadTree : public sf::Drawable {
    public:
 	QuadTree(const sf::FloatRect& boundary, unsigned short capacity);
 	~QuadTree();
+
 	void reset();
 	bool insert(DataType* object);
 	void query(const sf::FloatRect& range,
 			   std::unordered_set<DataType*>& objectsFound);
+	bool contains(const sf::Vector2f&);
 
    private:
+	QuadTree(const sf::FloatRect& boundary, unsigned short capacity, QuadTree*);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	void subdivide();
+
+	QuadTree<DataType>* parentNode = nullptr;
 	unsigned short capacity;
 	bool divided = false;
-	std::unique_ptr<QuadTree> northWest, northEast, southWest,
-		southEast = nullptr;
+	std::unique_ptr<QuadTree> northWest = nullptr, northEast = nullptr,
+							  southWest = nullptr, southEast = nullptr;
 	std::vector<DataType*> objects{};
 	sf::VertexArray boundaryLines{sf::LineStrip, LINES_PER_NODE};
 	const sf::FloatRect boundary{};
 
-	void subdivide();
+	static std::unordered_map<DataType*, QuadTree<DataType>*> objectsNode;
 };
+
+template <class DataType>
+std::unordered_map<DataType*, QuadTree<DataType>*>
+	QuadTree<DataType>::objectsNode{};
 
 template <class DataType>
 QuadTree<DataType>::QuadTree(const sf::FloatRect& boundary,
@@ -46,18 +57,20 @@ QuadTree<DataType>::QuadTree(const sf::FloatRect& boundary,
 }
 
 template <class DataType>
+QuadTree<DataType>::QuadTree(const sf::FloatRect& boundary,
+							 unsigned short capacity,
+							 QuadTree* parentNode)
+	: QuadTree(boundary, capacity) {
+	parentNode = parentNode;
+}
+
+template <class DataType>
 QuadTree<DataType>::~QuadTree() {
 	reset();
 }
 
 template <class DataType>
 void QuadTree<DataType>::reset() {
-	// if (divided) {
-	//     delete northWest.re;
-	//     delete northEast;
-	//     delete southWest;
-	//     delete southEast;
-	// }
 	divided = false;
 	objects.clear();
 	boundaryLines[1].position = boundary.getPosition();
@@ -76,6 +89,13 @@ void QuadTree<DataType>::draw(sf::RenderTarget& target,
 }
 
 template <class DataType>
+bool QuadTree<DataType>::contains(const sf::Vector2f& position) {
+	return boundary.top < position.y && boundary.left < position.x &&
+		   boundary.top + boundary.height > position.y &&
+		   boundary.left + boundary.width > position.x;
+}
+
+template <class DataType>
 void QuadTree<DataType>::subdivide() {
 	divided = true;
 	const sf::Vector2f dividedSize(boundary.width / 2, boundary.height / 2);
@@ -89,10 +109,10 @@ void QuadTree<DataType>::subdivide() {
 	const sf::FloatRect sw(nw.getPosition() + sf::Vector2f(0, dividedSize.y),
 						   nw.getSize());
 
-	northWest = std::make_unique<QuadTree<DataType>>(nw, capacity);
-	northEast = std::make_unique<QuadTree<DataType>>(ne, capacity);
-	southWest = std::make_unique<QuadTree<DataType>>(sw, capacity);
-	southEast = std::make_unique<QuadTree<DataType>>(se, capacity);
+	northWest = std::unique_ptr<QuadTree>(new QuadTree(nw, capacity, this));
+	northEast = std::unique_ptr<QuadTree>(new QuadTree(ne, capacity, this));
+	southWest = std::unique_ptr<QuadTree>(new QuadTree(sw, capacity, this));
+	southEast = std::unique_ptr<QuadTree>(new QuadTree(se, capacity, this));
 
 	while (!objects.empty()) {
 		DataType* object = objects.back();
@@ -105,24 +125,23 @@ void QuadTree<DataType>::subdivide() {
 
 template <class DataType>
 bool QuadTree<DataType>::insert(DataType* object) {
+	// auto objectNode = objectsNode.find(object);
+	// if (objectNode != objectsNode.end()) {
+	// }
+	// if (objectsNode.fin)
+
 	sf::Vector2f position = object->getCenterPosition();
-	if (boundary.top > position.y || boundary.left > position.x ||
-		boundary.top + boundary.height < position.y ||
-		boundary.left + boundary.width < position.x)
+	if (!contains(position))
 		return false;
 
 	if (divided) {
-	dividedInsert:
 		return northWest->insert(object) || northEast->insert(object) ||
 			   southWest->insert(object) || southEast->insert(object);
 	} else {
-		if (objects.size() < capacity) {
-			objects.push_back(object);
-			return true;
-		} else {
+		objects.push_back(object);
+		if (objects.size() > capacity)
 			subdivide();
-			goto dividedInsert;
-		}
+		return true;
 	}
 }
 
