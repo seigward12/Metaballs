@@ -3,7 +3,9 @@ target_sources(${PROJECT_NAME} PRIVATE
     State.hpp
     StateManager.cpp
     Particle.cpp
-    QuadTree.hpp
+    SpatialBinaryTree.cpp
+
+    # QuadTree.hpp
 )
 
 set(ASSETS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/assets/)
