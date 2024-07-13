@@ -10,11 +10,12 @@ class SpatialBinaryTree {
    public:
 	SpatialBinaryTree() = default;
 	~SpatialBinaryTree() = default;
+	void clear(const Particle*);
 	void emplace(const Particle*);
 	void erase(const Particle*);
+	void move(const Particle*);
 	void query(const sf::FloatRect&, std::unordered_set<Particle*>&);
 	void query(const Particle*, std::unordered_set<Particle*>&);
-	void move(const Particle*);
 
    private:
 	ParticleMap bottomBoundTree;

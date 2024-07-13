@@ -1,4 +1,12 @@
 #include "SpatialBinaryTree.hpp"
+#include <set>
+
+void SpatialBinaryTree::clear(const Particle*) {
+	bottomBoundTree.clear();
+	leftBoundTree.clear();
+	rightBoundTree.clear();
+	topBoundTree.clear();
+}
 
 void SpatialBinaryTree::emplace(const Particle* particle) {
 	const sf::FloatRect bounds = particle->getGlobalBounds();
@@ -43,10 +51,17 @@ void SpatialBinaryTree::query(
 		 bottomIt->first > boxCenterPosition.y;
 		 ++bottomIt)
 		particlesInYRange.emplace(bottomIt->second);
+
+	for (const Particle* particle : particlesInXRange) {
+		if (particlesInYRange.contains(particle))
+			particlesInCollision.emplace(particle);
+	}
 }
 
 void SpatialBinaryTree::query(
 	const Particle* particle,
-	std::unordered_set<Particle*>& particlesInCollision) {}
+	std::unordered_set<Particle*>& particlesInCollision) {
+	query(particle->getGlobalBounds(), particlesInCollision);
+}
 
 void SpatialBinaryTree::move(const Particle* particle) {}
