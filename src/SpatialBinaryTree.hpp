@@ -1,16 +1,16 @@
 #pragma once
-#include <Particle.hpp>
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include "Particle.hpp"
 
-typedef std::map<float, const Particle*> ParticleMap;
+typedef std::multimap<float, const Particle*> ParticleMap;
 
 class SpatialBinaryTree {
    public:
-	SpatialBinaryTree();
-	~SpatialBinaryTree();
-	bool emplace(const Particle*);
+	SpatialBinaryTree() = default;
+	~SpatialBinaryTree() = default;
+	void emplace(const Particle*);
 	void erase(const Particle*);
 	void query(const sf::FloatRect&, std::unordered_set<Particle*>&);
 	void query(const Particle*, std::unordered_set<Particle*>&);
