@@ -97,7 +97,7 @@ void SpatialBinaryTree::query(
 
 	for (const Particle* particle : particlesInXRange) {
 		if (particlesInYRange.contains(particle))
-			particlesInCollision.emplace(particle);
+			particlesInCollision.insert(const_cast<Particle*>(particle));
 	}
 }
 
