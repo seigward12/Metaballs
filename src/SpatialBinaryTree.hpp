@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include "Particle.hpp"
 
-typedef std::multimap<float, const Particle*> ParticleMap;
+//TODO essayer avec un map de vector2f left/top et right/bottom et prédicat x < x &&
 
 class SpatialBinaryTree {
    public:
@@ -18,6 +18,7 @@ class SpatialBinaryTree {
 	void query(const Particle*, std::unordered_set<Particle*>&);
 
    private:
+	using ParticleMap = std::multimap<float, const Particle*>;
 	ParticleMap bottomBoundTree;
 	ParticleMap leftBoundTree;
 	ParticleMap rightBoundTree;
@@ -29,5 +30,5 @@ class SpatialBinaryTree {
 	// 	ParticleMap::iterator rightIt;
 	// 	ParticleMap::iterator topIt;
 	// };
-	// std::unordered_map<const Particle*, ParticlePositionInTrees> leftBoundTree;
+	// std::unordered_map<const Particle*, ParticlePositionInTrees> treeIterators;
 };
