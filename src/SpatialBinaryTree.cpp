@@ -10,6 +10,8 @@ void SpatialBinaryTree::clear() {
 }
 
 void SpatialBinaryTree::emplace(const Particle* particle) {
+	if (particle == nullptr)
+		return;
 	const sf::FloatRect bounds = particle->getGlobalBounds();
 
 	treeIterators.emplace(
