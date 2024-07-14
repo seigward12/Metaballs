@@ -5,12 +5,13 @@
 #include "Particle.hpp"
 
 //TODO essayer avec un map de vector2f left/top et right/bottom et prédicat x < x &&
+//TODO make tree be the only owner of particles, and offer a method to give iterator
 
 class SpatialBinaryTree {
    public:
 	SpatialBinaryTree() = default;
 	~SpatialBinaryTree() = default;
-	void clear(const Particle*);
+	void clear();
 	void emplace(const Particle*);
 	void erase(const Particle*);
 	void move(const Particle*);
@@ -24,11 +25,11 @@ class SpatialBinaryTree {
 	ParticleMap rightBoundTree;
 	ParticleMap topBoundTree;
 
-	// struct ParticlePositionInTrees {
-	// 	ParticleMap::iterator bottomIt;
-	// 	ParticleMap::iterator leftIt;
-	// 	ParticleMap::iterator rightIt;
-	// 	ParticleMap::iterator topIt;
-	// };
-	// std::unordered_map<const Particle*, ParticlePositionInTrees> treeIterators;
+	struct ParticlePositionInTrees {
+		ParticleMap::iterator bottomIt;
+		ParticleMap::iterator leftIt;
+		ParticleMap::iterator rightIt;
+		ParticleMap::iterator topIt;
+	};
+	std::unordered_map<const Particle*, ParticlePositionInTrees> treeIterators;
 };
