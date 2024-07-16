@@ -7,7 +7,7 @@
 //TODO essayer avec un map de vector2f left/top et right/bottom et prédicat x < x &&
 //TODO make tree be the only owner of particles, and offer a method to give iterator
 
-class SpatialBinaryTree {
+class SpatialBinaryTree : public sf::Drawable {
    public:
 	SpatialBinaryTree() = default;
 	~SpatialBinaryTree() = default;
@@ -19,6 +19,7 @@ class SpatialBinaryTree {
 	void query(const Particle*, std::unordered_set<Particle*>&);
 
    private:
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 	using ParticleMap = std::multimap<float, const Particle*>;
 	ParticleMap bottomBoundTree;
 	ParticleMap leftBoundTree;

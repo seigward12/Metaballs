@@ -193,7 +193,8 @@ void MainScreen::processEvent(const sf::Event& event) {
 				pressed = true;
 			break;
 
-		case sf::Event::MouseButtonReleased:
+		case sf::Event::
+			MouseButtonReleased:  //TODO mal a relacher quand fps trop hauts
 			if (event.mouseButton.button == sf::Mouse::Left) {
 				pressed = false;
 				if (selectedParticle != nullptr) {
@@ -403,6 +404,9 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 
 	if (showMouseRect)
 		target.draw(mouseRect, states);
+
+	if (showQuadTree)
+		target.draw(spacialBinaryTree, states);
 
 	target.draw(fpsLabel, states);
 

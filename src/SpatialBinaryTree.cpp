@@ -107,3 +107,20 @@ void SpatialBinaryTree::query(
 	std::unordered_set<Particle*>& particlesInCollision) {
 	query(particle->getGlobalBounds(), particlesInCollision);
 }
+
+void SpatialBinaryTree::draw(sf::RenderTarget& target,
+							 sf::RenderStates states) const {
+	for (const auto particle : treeIterators) {
+		float bottom = particle.second.bottomIt->first;
+		float left = particle.second.leftIt->first;
+		float right = particle.second.rightIt->first;
+		float top = particle.second.topIt->first;
+		sf::VertexArray lines{sf::LineStrip, 5};
+		lines[0].position = sf::Vector2f(left, top);
+		lines[1].position = sf::Vector2f(right, top);
+		lines[2].position = sf::Vector2f(right, bottom);
+		lines[3].position = sf::Vector2f(left, bottom);
+		lines[4].position = sf::Vector2f(left, top);
+		target.draw(lines, states);
+	}
+}
