@@ -22,6 +22,7 @@ void SpatialBinaryTree::emplace(const Particle* particle) {
 			rightBoundTree.emplace(bounds.left + bounds.width, particle),
 			topBoundTree.emplace(bounds.top, particle)});
 }
+
 void SpatialBinaryTree::erase(const Particle* particle) {
 	const auto& particleIterators = treeIterators.find(particle);
 	if (particleIterators == treeIterators.end())

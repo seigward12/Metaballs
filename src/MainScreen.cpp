@@ -44,7 +44,6 @@ MainScreen::MainScreen(StateManager* stateManager)
 	boundaryShape.setSize(boundary.getSize());
 	boundaryShape.setFillColor(sf::Color::Black);
 
-	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 	setNewMaxRadius(radius);
 
 	bool fontResult = font.loadFromFile(ARIAL_FONT);
@@ -119,16 +118,6 @@ MainScreen::MainScreen(StateManager* stateManager)
 	speedInput->setText(std::to_string(particleSpeed));
 	speedInput->onReturnKeyPress(&MainScreen::setParticuleSpeed, this);
 	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Speed");
-	verticalSideBar->add(horizontalLayout);
-	verticalSideBar->addSpace(BUTTONS_SPACING);
-
-	horizontalLayout = tgui::HorizontalLayout::copy(horizontalLayout);
-	tgui::EditBox::Ptr nodeCapacityInput =
-		horizontalLayout->get(1)->cast<tgui::EditBox>();
-	nodeCapacityInput->setInputValidator(STRICLY_POSITIVE_INT_REGEX);
-	nodeCapacityInput->setText(std::to_string(treeNodeCapacity));
-	nodeCapacityInput->onReturnKeyPress(&MainScreen::setTreeNodeCapacity, this);
-	horizontalLayout->get(0)->cast<tgui::Label>()->setText("Node capacity");
 	verticalSideBar->add(horizontalLayout);
 	verticalSideBar->addSpace(BUTTONS_SPACING);
 
@@ -224,11 +213,6 @@ void MainScreen::processEvent(const sf::Event& event) {
 }
 
 void MainScreen::update(const sf::Time& dt) {
-	// 3 sections
-	// -1 quadtree clean, can search particles, but not modify their position
-	// -2 modify particle positions, but cant search quadtree because positions
-	// 	modified/ or find a way to modify quadtree to update positions
-	// -3 rebuildQuadTree
 	if (fpsTimer.getElapsedTime().asSeconds() >= 1) {
 		fpsTimer.restart();
 		fpsLabel.setString("FPS: " + std::to_string((int)(1 / dt.asSeconds())));
@@ -254,17 +238,15 @@ void MainScreen::update(const sf::Time& dt) {
 		moveObjects(dt);
 	} else if (selectedParticle != nullptr) {
 		selectedParticle->setPosition(mousePosition);
+		spacialBinaryTree.move(selectedParticle);
 	}
 
-	quadTree->reset();
-	for (auto& particle : particles) {
-		quadTree->insert(particle.get());
+	for (auto& particle : particles)
 		particle->setColor(DEFAULT_COLOR);
-	}
 
 	for (auto& particle : particles) {
 		std::unordered_set<Particle*> collisions;
-		quadTree->query(particle->getGlobalBounds(), collisions);
+		spacialBinaryTree.query(particle.get(), collisions);
 
 		for (Particle* myCollision : collisions) {
 			if (particle.get() == myCollision)
@@ -272,6 +254,8 @@ void MainScreen::update(const sf::Time& dt) {
 
 			if (collisionEnabled && !isPaused) {
 				particle->collideWithParticle(*myCollision);
+				spacialBinaryTree.move(particle.get());
+				spacialBinaryTree.move(myCollision);
 			} else {
 				if (particle->isColliding(*myCollision)) {
 					particle->setColor(COLLISION_COLOR);
@@ -284,7 +268,8 @@ void MainScreen::update(const sf::Time& dt) {
 	if (showMouseRect) {
 		mouseRect.setPosition(mousePosition);
 		std::unordered_set<Particle*> ParticlesInMouseRect;
-		quadTree->query(mouseRect.getGlobalBounds(), ParticlesInMouseRect);
+		spacialBinaryTree.query(mouseRect.getGlobalBounds(),
+								ParticlesInMouseRect);
 
 		for (const auto& myCollision : ParticlesInMouseRect)
 			myCollision->setColor(MOUSE_RECT_COLOR);
@@ -295,129 +280,126 @@ void MainScreen::update(const sf::Time& dt) {
 
 	oldMousePosition = mousePosition;
 
-	if (shaderEnabled) {
-		Particle::setGlobalBoundsTransform(BoundsTransform::scaleParticle);
-		particlesGroupsForShader.clear();
-		std::unordered_map<Particle*, std::unordered_set<Particle*>*>
-			visitedParticles;
-		std::unordered_set<Particle*> neighbors;
-		std::function<void(const Particle* const)> scaleAndQueryParticle =
-			[&](const Particle* const particleToScaleAndQuery) {
-				neighbors.clear();
-				quadTree->query(particleToScaleAndQuery->getGlobalBounds(),
-								neighbors);
-			};
-		for (auto& particlePtr : particles) {
-			Particle* particle = particlePtr.get();
-			if (visitedParticles.contains(particle))
-				continue;
+	// if (shaderEnabled) {
+	// 	Particle::setGlobalBoundsTransform(BoundsTransform::scaleParticle);
+	// 	particlesGroupsForShader.clear();
+	// 	std::unordered_map<Particle*, std::unordered_set<Particle*>*>
+	// 		visitedParticles;
+	// 	std::unordered_set<Particle*> neighbors;
+	// 	std::function<void(const Particle* const)> scaleAndQueryParticle =
+	// 		[&](const Particle* const particleToScaleAndQuery) {
+	// 			neighbors.clear();
+	// 			spacialBinaryTree.query(
+	// 				particleToScaleAndQuery->getGlobalBounds(), neighbors);
+	// 		};
+	// 	for (auto& particlePtr : particles) {
+	// 		Particle* particle = particlePtr.get();
+	// 		if (visitedParticles.contains(particle))
+	// 			continue;
 
-			scaleAndQueryParticle(particle);
+	// 		scaleAndQueryParticle(particle);
 
-			Particle* firstAlreadyVisitedParticle = nullptr;
-			std::unordered_set<Particle*>* particleGroup = nullptr;
-			for (Particle* neighbor : neighbors) {
-				if (visitedParticles.contains(neighbor)) {
-					firstAlreadyVisitedParticle = neighbor;
-					break;
-				}
-			}
-			if (firstAlreadyVisitedParticle ==
-				nullptr) {	// fontionne parceque le query retourne la même particule
-				particlesGroupsForShader.emplace(
-					particle, std::unordered_set<Particle*>());
-				particleGroup = &particlesGroupsForShader.at(particle);
-			} else
-				particleGroup =
-					visitedParticles.at(firstAlreadyVisitedParticle);
+	// 		Particle* firstAlreadyVisitedParticle = nullptr;
+	// 		std::unordered_set<Particle*>* particleGroup = nullptr;
+	// 		for (Particle* neighbor : neighbors) {
+	// 			if (visitedParticles.contains(neighbor)) {
+	// 				firstAlreadyVisitedParticle = neighbor;
+	// 				break;
+	// 			}
+	// 		}
+	// 		if (firstAlreadyVisitedParticle ==
+	// 			nullptr) {	// fontionne parceque le query retourne la même particule
+	// 			particlesGroupsForShader.emplace(
+	// 				particle, std::unordered_set<Particle*>());
+	// 			particleGroup = &particlesGroupsForShader.at(particle);
+	// 		} else
+	// 			particleGroup =
+	// 				visitedParticles.at(firstAlreadyVisitedParticle);
 
-			for (Particle* neighbor : neighbors) {
-				if (visitedParticles.contains(neighbor)) {
-					std::unordered_set<Particle*>* neighborGroup =
-						visitedParticles.at(neighbor);
-					if (neighborGroup == particleGroup)
-						continue;
-					Particle* groupToRemoveKey = nullptr;
-					for (Particle* neighborOfNeighbor : *neighborGroup) {
-						if (particlesGroupsForShader.contains(
-								neighborOfNeighbor))
-							groupToRemoveKey = neighborOfNeighbor;
-						visitedParticles[neighborOfNeighbor] = neighborGroup;
-					}
-					particlesGroupsForShader.erase(groupToRemoveKey);
-				} else {
-					visitedParticles.emplace(neighbor, particleGroup);
-					particleGroup->insert(neighbor);
-				}
-			}
-		}
-		Particle::resetGlobalBoundsTransfom();
-	}
+	// 		for (Particle* neighbor : neighbors) {
+	// 			if (visitedParticles.contains(neighbor)) {
+	// 				std::unordered_set<Particle*>* neighborGroup =
+	// 					visitedParticles.at(neighbor);
+	// 				if (neighborGroup == particleGroup)
+	// 					continue;
+	// 				Particle* groupToRemoveKey = nullptr;
+	// 				for (Particle* neighborOfNeighbor : *neighborGroup) {
+	// 					if (particlesGroupsForShader.contains(
+	// 							neighborOfNeighbor))
+	// 						groupToRemoveKey = neighborOfNeighbor;
+	// 					visitedParticles[neighborOfNeighbor] = neighborGroup;
+	// 				}
+	// 				particlesGroupsForShader.erase(groupToRemoveKey);
+	// 			} else {
+	// 				visitedParticles.emplace(neighbor, particleGroup);
+	// 				particleGroup->insert(neighbor);
+	// 			}
+	// 		}
+	// 	}
+	// 	Particle::resetGlobalBoundsTransfom();
+	// }
 }
 
 void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	if (shaderEnabled) {
-		for (const auto& [_, particleGroup] : particlesGroupsForShader) {
-			float top =
-				(*std::min_element(particleGroup.begin(), particleGroup.end(),
-								   [](Particle* lhs, Particle* rhs) {
-									   return lhs->getGlobalBounds().top <
-											  rhs->getGlobalBounds().top;
-								   }))
-					->getGlobalBounds()
-					.top;
-			float left =
-				(*std::min_element(particleGroup.begin(), particleGroup.end(),
-								   [](Particle* lhs, Particle* rhs) {
-									   return lhs->getGlobalBounds().left <
-											  rhs->getGlobalBounds().left;
-								   }))
-					->getGlobalBounds()
-					.left;
-			Particle* rightParticle = (*std::max_element(
-				particleGroup.begin(), particleGroup.end(),
-				[](Particle* lhs, Particle* rhs) {
-					return lhs->getCenterPosition().x + lhs->getRadius() <
-						   rhs->getCenterPosition().x + rhs->getRadius();
-				}));
-			float right = rightParticle->getCenterPosition().x +
-						  rightParticle->getRadius();
-			Particle* downParticle = (*std::max_element(
-				particleGroup.begin(), particleGroup.end(),
-				[](Particle* lhs, Particle* rhs) {
-					return lhs->getCenterPosition().y + lhs->getRadius() <
-						   rhs->getCenterPosition().y + rhs->getRadius();
-				}));
-			float down =
-				downParticle->getCenterPosition().y + downParticle->getRadius();
-			sf::RectangleShape groupMaxRectangle(
-				sf::Vector2f(right - left, down - top));
-			groupMaxRectangle.setPosition(sf::Vector2f(left, top));
-			sf::FloatRect groupBounds = groupMaxRectangle.getGlobalBounds();
-			sf::FloatRect firstBound =
-				(*particleGroup.begin())->getGlobalBounds();
-			groupMaxRectangle.setFillColor(sf::Color(120, 120, 120, 120));
-			target.draw(groupMaxRectangle, states);
-			///
-			// states.shader = &metaballsShader;
-			// target.draw(boundaryShape, states);
-			// states.shader = nullptr;
-		}
-		for (auto& myObject : particles) {
-			sf::FloatRect a =
-				BoundsTransform::scaleParticle(myObject->getGlobalBounds());
-			sf::RectangleShape b(sf::Vector2f(a.width, a.height));
-			b.setFillColor(sf::Color(255, 0, 0, 50));
-			b.setPosition(a.getPosition());
-			target.draw(b, states);
-		}
-	} else {
-		for (auto& myObject : particles)
-			target.draw(*myObject, states);
-	}
-
-	if (showQuadTree)
-		target.draw(*quadTree, states);
+	// if (shaderEnabled) {
+	// 	for (const auto& [_, particleGroup] : particlesGroupsForShader) {
+	// 		float top =
+	// 			(*std::min_element(particleGroup.begin(), particleGroup.end(),
+	// 							   [](Particle* lhs, Particle* rhs) {
+	// 								   return lhs->getGlobalBounds().top <
+	// 										  rhs->getGlobalBounds().top;
+	// 							   }))
+	// 				->getGlobalBounds()
+	// 				.top;
+	// 		float left =
+	// 			(*std::min_element(particleGroup.begin(), particleGroup.end(),
+	// 							   [](Particle* lhs, Particle* rhs) {
+	// 								   return lhs->getGlobalBounds().left <
+	// 										  rhs->getGlobalBounds().left;
+	// 							   }))
+	// 				->getGlobalBounds()
+	// 				.left;
+	// 		Particle* rightParticle = (*std::max_element(
+	// 			particleGroup.begin(), particleGroup.end(),
+	// 			[](Particle* lhs, Particle* rhs) {
+	// 				return lhs->getCenterPosition().x + lhs->getRadius() <
+	// 					   rhs->getCenterPosition().x + rhs->getRadius();
+	// 			}));
+	// 		float right = rightParticle->getCenterPosition().x +
+	// 					  rightParticle->getRadius();
+	// 		Particle* downParticle = (*std::max_element(
+	// 			particleGroup.begin(), particleGroup.end(),
+	// 			[](Particle* lhs, Particle* rhs) {
+	// 				return lhs->getCenterPosition().y + lhs->getRadius() <
+	// 					   rhs->getCenterPosition().y + rhs->getRadius();
+	// 			}));
+	// 		float down =
+	// 			downParticle->getCenterPosition().y + downParticle->getRadius();
+	// 		sf::RectangleShape groupMaxRectangle(
+	// 			sf::Vector2f(right - left, down - top));
+	// 		groupMaxRectangle.setPosition(sf::Vector2f(left, top));
+	// 		sf::FloatRect groupBounds = groupMaxRectangle.getGlobalBounds();
+	// 		sf::FloatRect firstBound =
+	// 			(*particleGroup.begin())->getGlobalBounds();
+	// 		groupMaxRectangle.setFillColor(sf::Color(120, 120, 120, 120));
+	// 		target.draw(groupMaxRectangle, states);
+	// 		///
+	// 		// states.shader = &metaballsShader;
+	// 		// target.draw(boundaryShape, states);
+	// 		// states.shader = nullptr;
+	// 	}
+	// 	for (auto& myObject : particles) {
+	// 		sf::FloatRect a =
+	// 			BoundsTransform::scaleParticle(myObject->getGlobalBounds());
+	// 		sf::RectangleShape b(sf::Vector2f(a.width, a.height));
+	// 		b.setFillColor(sf::Color(255, 0, 0, 50));
+	// 		b.setPosition(a.getPosition());
+	// 		target.draw(b, states);
+	// 	}
+	// } else {
+	for (auto& particle : particles)
+		target.draw(*particle, states);
+	// }
 
 	if (showMouseRect)
 		target.draw(mouseRect, states);
@@ -429,14 +411,17 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 }
 
 void MainScreen::moveObjects(const sf::Time& dt) {
-	for (auto& myObject : particles)
-		myObject->update(dt, boundary);
+	for (auto& particle : particles) {
+		particle->update(dt, boundary);
+		spacialBinaryTree.move(particle.get());
+	}
 }
 
 void MainScreen::initializeObjects(int objectNumber) {
 	if (objectNumber < 0)
-		objectNumber = particles.size();
+		objectNumber = particles.size();  //chnage number on tgui button
 	particles.clear();
+	spacialBinaryTree.clear();
 	for (unsigned short i = 0; i < objectNumber; i++) {
 		addParticle(sf::Vector2f((rand() % (int)boundary.width),
 								 ((rand() % (int)boundary.height))));
@@ -460,6 +445,7 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
 		(radius / 2) + rand() % static_cast<int>(radius)));
 	particles.back()->setPosition(position);
 	particles.back()->setVelocity(getRandomVelocity(particleSpeed));
+	spacialBinaryTree.emplace(particles.back().get());
 }
 
 void MainScreen::selectParticle() {
@@ -469,7 +455,7 @@ void MainScreen::selectParticle() {
 
 	std::unordered_set<Particle*> selectedParticles;
 
-	quadTree->query(mouseRect, selectedParticles);
+	spacialBinaryTree.query(mouseRect, selectedParticles);
 
 	if (!selectedParticles.empty()) {
 		float minDistanceSquare = highestRadius * highestRadius;
@@ -488,6 +474,7 @@ void MainScreen::selectParticle() {
 			selectedParticle->setVelocity(sf::Vector2f(0, 0));
 			selectedParticle->setPosition(mousePosition);
 			selectedParticle->setInfiniteMass(true);
+			spacialBinaryTree.move(selectedParticle);
 		}
 	}
 }
@@ -503,9 +490,11 @@ void MainScreen::setParticuleRadius(const tgui::String& newRadiusString) {
 	if (radius != newRadius) {
 		radius = newRadius;
 		setNewMaxRadius(newRadius);
+		spacialBinaryTree.clear();
 		for (auto& particle : particles) {
 			particle->setRadius((radius / 2) +
 								rand() % static_cast<int>(radius));
+			spacialBinaryTree.emplace(particle.get());
 		}
 	}
 }
@@ -521,15 +510,5 @@ void MainScreen::setParticuleSpeed(const tgui::String& particuleSpeedString) {
 		for (auto& particle : particles) {
 			particle->setVelocity(getRandomVelocity(particleSpeed));
 		}
-	}
-}
-
-void MainScreen::setTreeNodeCapacity(
-	const tgui::String& newTreeNodeCapacityString) {
-	int newTreeNodeCapacity = newTreeNodeCapacityString.toUInt();
-	if (treeNodeCapacity != newTreeNodeCapacity) {
-		treeNodeCapacity = newTreeNodeCapacity;
-		quadTree =
-			std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
 	}
 }
