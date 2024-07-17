@@ -84,5 +84,4 @@ class MainScreen : public State {
 	void brush();
 	void selectParticle();
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-	void setNewMaxRadius(const float newRadius);
 };
