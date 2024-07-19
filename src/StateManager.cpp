@@ -9,7 +9,7 @@ StateManager::StateManager(unsigned int width, unsigned int height)
 	  width{width},
 	  height{height} {
 	window.setKeyRepeatEnabled(false);
-	window.setFramerateLimit(144);	// TODO find real limit
+	window.setFramerateLimit(144);	// TODO
 	gui.setWindow(window);
 }
 

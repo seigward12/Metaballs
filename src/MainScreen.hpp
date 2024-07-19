@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "Particle.hpp"
-#include "SpatialBinaryTree.hpp"
+#include "QuadTree.hpp"
 #include "State.hpp"
 #include "StateManager.hpp"
 
@@ -15,9 +15,11 @@
 // // const sf::Color DEFAULT_COLOR = sf::Color::Green;
 // // const sf::Color COLLISION_COLOR = sf::Color::Red;
 // // const sf::Color MOUSE_RECT_COLOR = sf::Color::Magenta;
+// // const sf::Color QUAD_TREE_COLOR = sf::Color::White;
 const sf::Color DEFAULT_COLOR = sf::Color(0, 255, 0, 255);
 const sf::Color COLLISION_COLOR = sf::Color(255, 0, 0, 255);
 const sf::Color MOUSE_RECT_COLOR = sf::Color(255, 0, 255, 255);
+const sf::Color QUAD_TREE_COLOR = sf::Color(255, 255, 255, 255);
 
 const size_t SHADER_PARTICLE_GROUP_SIZE = 8;
 
@@ -32,6 +34,7 @@ class MainScreen : public State {
 	void setParticuleCount(const tgui::String&);
 	void setParticuleRadius(const tgui::String&);
 	void setParticuleSpeed(const tgui::String&);
+	void setTreeNodeCapacity(const tgui::String&);
 
 	// checkboxes methods
 	void setPaused(bool _isPaused) { isPaused = _isPaused; };
@@ -61,7 +64,7 @@ class MainScreen : public State {
 	sf::Vector2f mousePosition = sf::Vector2f(0, 0);
 	sf::Vector2f oldMousePosition = sf::Vector2f(0, 0);
 
-	SpatialBinaryTree spacialBinaryTree;
+	std::unique_ptr<QuadTree<Particle>> quadTree;
 	sf::FloatRect boundary;
 	sf::RectangleShape boundaryShape;
 
@@ -82,6 +85,8 @@ class MainScreen : public State {
 	void moveObjects(const sf::Time& dt);
 	void addParticle(const sf::Vector2f& position);
 	void brush();
+	void updateSelectedParticle(const sf::Vector2f& position);
 	void selectParticle();
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	void setNewMaxRadius(const float newRadius);
 };
