@@ -41,12 +41,6 @@ void QuadTree::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 	}
 }
 
-bool QuadTree::contains(const sf::Vector2f& position) {
-	return boundary.top < position.y && boundary.left < position.x &&
-		   boundary.top + boundary.height > position.y &&
-		   boundary.left + boundary.width > position.x;
-}
-
 void QuadTree::subdivide() {
 	divided = true;
 	const sf::Vector2f dividedSize(boundary.width / 2, boundary.height / 2);
@@ -79,9 +73,7 @@ bool QuadTree::insert(Particle* object) {
 	// if (objectNode != objectsNode.end()) {
 	// }
 	// if (objectsNode.fin)
-
-	sf::Vector2f position = object->getCenterPosition();
-	if (!contains(position))
+	if (!boundary.contains(object->getCenterPosition()))
 		return false;
 
 	if (divided) {

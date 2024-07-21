@@ -17,7 +17,6 @@ class QuadTree : public sf::Drawable {
 	bool insert(Particle* object);
 	void query(const sf::FloatRect& range,
 			   std::unordered_set<Particle*>& objectsFound);
-	bool contains(const sf::Vector2f&);
 
    private:
 	QuadTree(const sf::FloatRect& boundary, unsigned short capacity, QuadTree*);
