@@ -76,7 +76,10 @@ bool QuadTree::insert(Particle* object) {
 	if (!boundary.contains(object->getCenterPosition()))
 		return false;
 
-	if (divided) {
+	if (boundary.height < object->getGlobalBounds().height ||
+		boundary.width < object->getGlobalBounds().width)
+		objects.push_back(object);
+	else if (divided) {
 		return northWest->insert(object) || northEast->insert(object) ||
 			   southWest->insert(object) || southEast->insert(object);
 	} else {
@@ -97,10 +100,9 @@ void QuadTree::query(const sf::FloatRect& range,
 		northEast->query(range, objectsFound);
 		southWest->query(range, objectsFound);
 		southEast->query(range, objectsFound);
-	} else {
-		for (Particle* object : objects) {
-			if (range.intersects(object->getGlobalBounds()))
-				objectsFound.insert(object);
-		}
+	}
+	for (Particle* object : objects) {
+		if (range.intersects(object->getGlobalBounds()))
+			objectsFound.insert(object);
 	}
 }
