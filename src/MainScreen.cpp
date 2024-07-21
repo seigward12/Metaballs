@@ -44,7 +44,7 @@ MainScreen::MainScreen(StateManager* stateManager)
 	boundaryShape.setSize(boundary.getSize());
 	boundaryShape.setFillColor(sf::Color::Black);
 
-	quadTree = std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
+	quadTree = std::make_unique<QuadTree>(boundary, treeNodeCapacity);
 	setNewMaxRadius(radius);
 
 	bool fontResult = font.loadFromFile(ARIAL_FONT);
@@ -529,7 +529,6 @@ void MainScreen::setTreeNodeCapacity(
 	int newTreeNodeCapacity = newTreeNodeCapacityString.toUInt();
 	if (treeNodeCapacity != newTreeNodeCapacity) {
 		treeNodeCapacity = newTreeNodeCapacity;
-		quadTree =
-			std::make_unique<QuadTree<Particle>>(boundary, treeNodeCapacity);
+		quadTree = std::make_unique<QuadTree>(boundary, treeNodeCapacity);
 	}
 }

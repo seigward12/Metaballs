@@ -64,7 +64,7 @@ class MainScreen : public State {
 	sf::Vector2f mousePosition = sf::Vector2f(0, 0);
 	sf::Vector2f oldMousePosition = sf::Vector2f(0, 0);
 
-	std::unique_ptr<QuadTree<Particle>> quadTree;
+	std::unique_ptr<QuadTree> quadTree;
 	sf::FloatRect boundary;
 	sf::RectangleShape boundaryShape;
 
