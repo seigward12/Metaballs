@@ -59,9 +59,11 @@ void QuadTree::subdivide() {
 	southWest = std::unique_ptr<QuadTree>(new QuadTree(sw, capacity, this));
 	southEast = std::unique_ptr<QuadTree>(new QuadTree(se, capacity, this));
 
-	while (!objects.empty()) {
-		Particle* object = objects.back();
-		objects.pop_back();
+	std::vector<Particle*> objectsCopy = objects;
+	objects.clear();
+	while (!objectsCopy.empty()) {
+		Particle* object = objectsCopy.back();
+		objectsCopy.pop_back();
 		insert(object);
 	}
 
@@ -77,9 +79,11 @@ bool QuadTree::insert(Particle* object) {
 		return false;
 
 	if (boundary.height < object->getGlobalBounds().height ||
-		boundary.width < object->getGlobalBounds().width)
+		boundary.width < object->getGlobalBounds().width) {
 		objects.push_back(object);
-	else if (divided) {
+		return true;
+
+	} else if (divided) {
 		return northWest->insert(object) || northEast->insert(object) ||
 			   southWest->insert(object) || southEast->insert(object);
 	} else {
