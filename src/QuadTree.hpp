@@ -5,8 +5,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include "Particle.hpp"
-constexpr unsigned short DIVISION_SIZE = 4;
-constexpr unsigned short LINES_PER_NODE = 3;
 
 class QuadTree : public sf::Drawable {
    public:
@@ -14,7 +12,8 @@ class QuadTree : public sf::Drawable {
 	~QuadTree();
 
 	void reset();
-	bool insert(Particle* object);
+	void insert(Particle* object);
+	void query(Particle* particle, std::unordered_set<Particle*>& objectsFound);
 	void query(const sf::FloatRect& range,
 			   std::unordered_set<Particle*>& objectsFound);
 
@@ -29,8 +28,9 @@ class QuadTree : public sf::Drawable {
 	std::unique_ptr<QuadTree> northWest = nullptr, northEast = nullptr,
 							  southWest = nullptr, southEast = nullptr;
 	std::vector<Particle*> objects{};
-	sf::VertexArray boundaryLines{sf::LineStrip, LINES_PER_NODE};
-	const sf::FloatRect boundary{};
+	sf::VertexArray boundaryLines{sf::LineStrip, 5};
+	const sf::FloatRect boundary;
+	sf::FloatRect smallestBoundingArea;
 
 	// static std::unordered_map<Particle*, QuadTree*> objectsNode;
 };

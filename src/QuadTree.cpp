@@ -2,16 +2,10 @@
 
 QuadTree::QuadTree(const sf::FloatRect& boundary, unsigned short capacity)
 	: capacity(capacity), boundary(boundary) {
-	boundaryLines[0].position =
-		boundary.getPosition() + sf::Vector2f(0.f, boundary.height);
-	boundaryLines[1].position = boundary.getPosition();
-	boundaryLines[2].position =
-		boundary.getPosition() + sf::Vector2f(boundary.width, 0.f);
-
-	const sf::Color color = sf::Color::Yellow;
-	for (int i = 0; i < LINES_PER_NODE; ++i) {
-		boundaryLines[i].color = color;
-	}
+	smallestBoundingArea =
+		sf::FloatRect(sf::Vector2f(boundary.left + boundary.width,
+								   boundary.top + boundary.height),
+					  sf::Vector2f(-boundary.width, -boundary.height));
 }
 
 QuadTree::QuadTree(const sf::FloatRect& boundary,
@@ -28,11 +22,16 @@ QuadTree::~QuadTree() {
 void QuadTree::reset() {
 	divided = false;
 	objects.clear();
-	boundaryLines[1].position = boundary.getPosition();
+	smallestBoundingArea =
+		sf::FloatRect(sf::Vector2f(boundary.left + boundary.width,
+								   boundary.top + boundary.height),
+					  sf::Vector2f(-boundary.width, -boundary.height));
 }
 
 void QuadTree::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	target.draw(boundaryLines);
+	if (objects.size() != 0 || divided)
+		target.draw(boundaryLines);
+
 	if (divided) {
 		target.draw(*northWest, states);
 		target.draw(*northEast, states);
@@ -66,37 +65,66 @@ void QuadTree::subdivide() {
 		objectsCopy.pop_back();
 		insert(object);
 	}
-
-	boundaryLines[1].position += sf::Vector2f(boundary.width, boundary.height);
 }
 
-bool QuadTree::insert(Particle* object) {
-	// auto objectNode = objectsNode.find(object);
-	// if (objectNode != objectsNode.end()) {
-	// }
-	// if (objectsNode.fin)
-	if (!boundary.contains(object->getCenterPosition()))
-		return false;
+void QuadTree::insert(Particle* object) {
+	const sf::FloatRect& objectBounds = object->getGlobalBounds();
+	float minX = std::min(smallestBoundingArea.left, objectBounds.left);
+	float minY = std::min(smallestBoundingArea.top, objectBounds.top);
+	float maxX =
+		std::max(smallestBoundingArea.left + smallestBoundingArea.width,
+				 objectBounds.left + objectBounds.width);
+	float maxY =
+		std::max(smallestBoundingArea.top + smallestBoundingArea.height,
+				 objectBounds.top + objectBounds.height);
+	smallestBoundingArea.left = minX;
+	smallestBoundingArea.top = minY;
+	smallestBoundingArea.width = maxX - smallestBoundingArea.left;
+	smallestBoundingArea.height = maxY - smallestBoundingArea.top;
+	if (boundaryLines[0].position != smallestBoundingArea.getPosition()) {
+		boundaryLines[0].position = smallestBoundingArea.getPosition();
+		boundaryLines[1].position.y = minY;
+		boundaryLines[3].position.x = minX;
+		boundaryLines[4].position = smallestBoundingArea.getPosition();
+	}
+	if (boundaryLines[2].position != sf::Vector2f(maxX, maxY)) {
+		boundaryLines[2].position = sf::Vector2f(maxX, maxY);
+		boundaryLines[1].position.x = maxX;
+		boundaryLines[3].position.y = maxY;
+	}
 
-	if (boundary.height < object->getGlobalBounds().height ||
-		boundary.width < object->getGlobalBounds().width) {
+	if (boundary.height < objectBounds.height ||
+		boundary.width < objectBounds.width)
 		objects.push_back(object);
-		return true;
+	else if (divided) {
+		sf::Vector2f centerPosition = object->getCenterPosition();
+		if (centerPosition.x <= boundary.left + boundary.width / 2.f) {
+			if (centerPosition.y <= boundary.top + boundary.height / 2.f)
+				northWest->insert(object);
+			else
+				southWest->insert(object);
 
-	} else if (divided) {
-		return northWest->insert(object) || northEast->insert(object) ||
-			   southWest->insert(object) || southEast->insert(object);
+		} else {
+			if (centerPosition.y <= boundary.top + boundary.height / 2.f)
+				northEast->insert(object);
+			else
+				southEast->insert(object);
+		}
 	} else {
 		objects.push_back(object);
 		if (objects.size() > capacity)
 			subdivide();
-		return true;
 	}
+}
+
+void QuadTree::query(Particle* particle,
+					 std::unordered_set<Particle*>& objectsFound) {
+	query(particle->getGlobalBounds(), objectsFound);
 }
 
 void QuadTree::query(const sf::FloatRect& range,
 					 std::unordered_set<Particle*>& objectsFound) {
-	if (!boundary.intersects(range))
+	if (!smallestBoundingArea.intersects(range))
 		return;
 
 	if (divided) {
