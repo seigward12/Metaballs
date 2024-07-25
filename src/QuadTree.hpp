@@ -13,9 +13,12 @@ class QuadTree : public sf::Drawable {
 
 	void reset();
 	void insert(Particle* object);
-	void query(Particle* particle, std::unordered_set<Particle*>& objectsFound);
+	void query(Particle* particle,
+			   std::unordered_set<Particle*>& objectsFound) const;
+	void query(const sf::Vector2f point,
+			   std::unordered_set<Particle*>& objectsFound) const;
 	void query(const sf::FloatRect& range,
-			   std::unordered_set<Particle*>& objectsFound);
+			   std::unordered_set<Particle*>& objectsFound) const;
 
    private:
 	QuadTree(const sf::FloatRect& boundary, unsigned short capacity, QuadTree*);

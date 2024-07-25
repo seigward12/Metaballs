@@ -45,7 +45,6 @@ MainScreen::MainScreen(StateManager* stateManager)
 	boundaryShape.setFillColor(sf::Color::Black);
 
 	quadTree = std::make_unique<QuadTree>(boundary, treeNodeCapacity);
-	setNewMaxRadius(radius);
 
 	bool fontResult = font.loadFromFile(ARIAL_FONT);
 	bool shaderResult = metaballsShader.loadFromFile(
@@ -463,24 +462,17 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
 }
 
 void MainScreen::selectParticle() {
-	sf::FloatRect mouseRect = sf::FloatRect(
-		mousePosition.x - highestRadius, mousePosition.y - highestRadius,
-		highestRadius * 2, highestRadius * 2);
-
 	std::unordered_set<Particle*> selectedParticles;
-
-	quadTree->query(mouseRect, selectedParticles);
+	quadTree->query(mousePosition, selectedParticles);
 
 	if (!selectedParticles.empty()) {
-		float minDistanceSquare = highestRadius * highestRadius;
 		for (Particle* particle : selectedParticles) {
 			sf::Vector2f distance =
 				particle->getCenterPosition() - mousePosition;
 			float distanceSquare =
 				distance.x * distance.x + distance.y * distance.y;
 			if (distanceSquare <=
-					particle->getRadius() * particle->getRadius() &&
-				distanceSquare < minDistanceSquare) {
+				particle->getRadius() * particle->getRadius()) {
 				selectedParticle = particle;
 			}
 		}
@@ -502,16 +494,11 @@ void MainScreen::setParticuleRadius(const tgui::String& newRadiusString) {
 	float newRadius = newRadiusString.toFloat();
 	if (radius != newRadius) {
 		radius = newRadius;
-		setNewMaxRadius(newRadius);
 		for (auto& particle : particles) {
 			particle->setRadius((radius / 2) +
 								rand() % static_cast<int>(radius));
 		}
 	}
-}
-
-void MainScreen::setNewMaxRadius(const float newRadius) {
-	highestRadius = newRadius * 1.5f;
 }
 
 void MainScreen::setParticuleSpeed(const tgui::String& particuleSpeedString) {

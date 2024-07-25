@@ -55,7 +55,6 @@ class MainScreen : public State {
 
 	unsigned int treeNodeCapacity;
 	float radius;
-	float highestRadius;
 	float particleSpeed;
 
 	Particle* selectedParticle = nullptr;
@@ -88,5 +87,4 @@ class MainScreen : public State {
 	void updateSelectedParticle(const sf::Vector2f& position);
 	void selectParticle();
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-	void setNewMaxRadius(const float newRadius);
 };

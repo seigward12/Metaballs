@@ -118,12 +118,28 @@ void QuadTree::insert(Particle* object) {
 }
 
 void QuadTree::query(Particle* particle,
-					 std::unordered_set<Particle*>& objectsFound) {
+					 std::unordered_set<Particle*>& objectsFound) const {
 	query(particle->getGlobalBounds(), objectsFound);
 }
 
+void QuadTree::query(const sf::Vector2f point,
+					 std::unordered_set<Particle*>& objectsFound) const {
+	if (!smallestBoundingArea.contains(point))
+		return;
+	if (divided) {
+		northWest->query(point, objectsFound);
+		northEast->query(point, objectsFound);
+		southWest->query(point, objectsFound);
+		southEast->query(point, objectsFound);
+	}
+	for (Particle* object : objects) {
+		if (object->getGlobalBounds().contains(point))
+			objectsFound.insert(object);
+	}
+}
+
 void QuadTree::query(const sf::FloatRect& range,
-					 std::unordered_set<Particle*>& objectsFound) {
+					 std::unordered_set<Particle*>& objectsFound) const {
 	if (!smallestBoundingArea.intersects(range))
 		return;
 
