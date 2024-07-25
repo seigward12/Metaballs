@@ -112,7 +112,7 @@ void QuadTree::insert(Particle* object) {
 		}
 	} else {
 		objects.push_back(object);
-		if (objects.size() > capacity)
+		if (!divided && objects.size() > capacity)
 			subdivide();
 	}
 }
