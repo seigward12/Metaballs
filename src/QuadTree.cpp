@@ -4,10 +4,9 @@ class QuadTree::Node : public sf::Drawable {
    public:
 	Node(const sf::FloatRect& boundary, int capacity);
 	void insert(Particle* object);
-	void query(const sf::Vector2f, std::unordered_set<Particle*>) const;
-	void query(const sf::FloatRect&, std::unordered_set<Particle*>) const;
+	void query(const sf::Vector2f, std::unordered_set<Particle*>&) const;
+	void query(const sf::FloatRect&, std::unordered_set<Particle*>&) const;
 	bool isSmaller(const sf::FloatRect&) const;
-	void clear();
 
    private:
 	void subdivide();
@@ -34,7 +33,7 @@ QuadTree::~QuadTree() {
 	delete rootNode;
 }
 
-void QuadTree::reset() {
+void QuadTree::clear() {
 	delete rootNode;
 	rootNode = new Node(boundary, capacity);
 }
@@ -81,7 +80,7 @@ bool QuadTree::Node::isDivided() const {
 }
 
 void QuadTree::Node::query(const sf::FloatRect& range,
-						   std::unordered_set<Particle*> objectsFound) const {
+						   std::unordered_set<Particle*>& objectsFound) const {
 	if (!smallestBoundingArea.intersects(range))
 		return;
 
@@ -96,7 +95,7 @@ void QuadTree::Node::query(const sf::FloatRect& range,
 }
 
 void QuadTree::Node::query(const sf::Vector2f point,
-						   std::unordered_set<Particle*> objectsFound) const {
+						   std::unordered_set<Particle*>& objectsFound) const {
 	if (!smallestBoundingArea.contains(point))
 		return;
 
@@ -167,14 +166,18 @@ void QuadTree::Node::insert(Particle* object) {
 }
 
 void QuadTree::Node::subdivide() {
-	for (int i = 0; i < CHILD_NUMBER; ++i) {
-		childNodes[i] = std::make_unique<Node>(
-			sf::FloatRect(boundary.getPosition() +
-							  sf::Vector2f(boundary.width * (i % 2),
-										   boundary.height * ((i + 1) % 2)),
-						  boundary.getSize() / 2.f),
-			capacity);
-	}
+	const sf::Vector2f dividedSize = boundary.getSize() / 2.f;
+	const sf::FloatRect nw(boundary.getPosition(), dividedSize);
+	sf::FloatRect ne = nw;
+	ne.left += dividedSize.x;
+	sf::FloatRect sw = nw;
+	ne.top += dividedSize.y;
+	sf::FloatRect se = sw;
+	se.left += dividedSize.x;
+	childNodes[0] = std::make_unique<Node>(nw, capacity);
+	childNodes[1] = std::make_unique<Node>(ne, capacity);
+	childNodes[2] = std::make_unique<Node>(sw, capacity);
+	childNodes[3] = std::make_unique<Node>(se, capacity);
 
 	std::vector<Particle*> objectsCopy = objects;
 	objects.clear();

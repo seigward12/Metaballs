@@ -255,7 +255,7 @@ void MainScreen::update(const sf::Time& dt) {
 		selectedParticle->setPosition(mousePosition);
 	}
 
-	quadTree->reset();
+	quadTree->clear();
 	for (auto& particle : particles) {
 		quadTree->insert(particle.get());
 		particle->setColor(DEFAULT_COLOR);
@@ -263,7 +263,7 @@ void MainScreen::update(const sf::Time& dt) {
 
 	for (auto& particle : particles) {
 		std::unordered_set<Particle*> collisions =
-			quadTree->query(particle->getGlobalBounds());
+			quadTree->query(particle.get());
 
 		for (Particle* myCollision : collisions) {
 			if (particle.get() == myCollision)
