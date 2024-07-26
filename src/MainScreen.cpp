@@ -262,8 +262,8 @@ void MainScreen::update(const sf::Time& dt) {
 	}
 
 	for (auto& particle : particles) {
-		std::unordered_set<Particle*> collisions;
-		quadTree->query(particle->getGlobalBounds(), collisions);
+		std::unordered_set<Particle*> collisions =
+			quadTree->query(particle->getGlobalBounds());
 
 		for (Particle* myCollision : collisions) {
 			if (particle.get() == myCollision)
@@ -282,8 +282,8 @@ void MainScreen::update(const sf::Time& dt) {
 
 	if (showMouseRect) {
 		mouseRect.setPosition(mousePosition);
-		std::unordered_set<Particle*> ParticlesInMouseRect;
-		quadTree->query(mouseRect.getGlobalBounds(), ParticlesInMouseRect);
+		std::unordered_set<Particle*> ParticlesInMouseRect =
+			quadTree->query(mouseRect.getGlobalBounds());
 
 		for (const auto& myCollision : ParticlesInMouseRect)
 			myCollision->setColor(MOUSE_RECT_COLOR);
@@ -303,8 +303,8 @@ void MainScreen::update(const sf::Time& dt) {
 		std::function<void(const Particle* const)> scaleAndQueryParticle =
 			[&](const Particle* const particleToScaleAndQuery) {
 				neighbors.clear();
-				quadTree->query(particleToScaleAndQuery->getGlobalBounds(),
-								neighbors);
+				neighbors =
+					quadTree->query(particleToScaleAndQuery->getGlobalBounds());
 			};
 		for (auto& particlePtr : particles) {
 			Particle* particle = particlePtr.get();
@@ -462,8 +462,8 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
 }
 
 void MainScreen::selectParticle() {
-	std::unordered_set<Particle*> selectedParticles;
-	quadTree->query(mousePosition, selectedParticles);
+	std::unordered_set<Particle*> selectedParticles =
+		quadTree->query(mousePosition);
 
 	if (!selectedParticles.empty()) {
 		for (Particle* particle : selectedParticles) {

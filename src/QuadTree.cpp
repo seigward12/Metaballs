@@ -1,6 +1,70 @@
 #include "QuadTree.hpp"
 
-QuadTree::QuadTree(const sf::FloatRect& boundary, unsigned short capacity)
+class QuadTree::Node : public sf::Drawable {
+   public:
+	Node(const sf::FloatRect& boundary, int capacity);
+	void insert(Particle* object);
+	void query(const sf::Vector2f, std::unordered_set<Particle*>) const;
+	void query(const sf::FloatRect&, std::unordered_set<Particle*>) const;
+	bool isSmaller(const sf::FloatRect&) const;
+	void clear();
+
+   private:
+	void subdivide();
+	bool isDivided() const;
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+	static const int CHILD_NUMBER = 4;
+	Node* parentNode = nullptr;
+	int capacity;
+	std::unique_ptr<Node>
+		childNodes[CHILD_NUMBER];  //0: NW, 1: NE, 2: SW, 3: SE
+	std::vector<Particle*> objects{};
+	sf::VertexArray boundaryLines{sf::LineStrip, 5};
+	const sf::FloatRect boundary;
+	sf::FloatRect smallestBoundingArea;
+};
+
+QuadTree::QuadTree(const sf::FloatRect& boundary, int capacity)
+	: capacity(capacity), boundary(boundary) {
+	rootNode = new Node(boundary, capacity);
+}
+
+QuadTree::~QuadTree() {
+	delete rootNode;
+}
+
+void QuadTree::reset() {
+	delete rootNode;
+	rootNode = new Node(boundary, capacity);
+}
+
+void QuadTree::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+	target.draw(*rootNode, states);
+}
+
+void QuadTree::insert(Particle* object) {
+	rootNode->insert(object);
+}
+
+std::unordered_set<Particle*> QuadTree::query(Particle* particle) const {
+	return query(particle->getGlobalBounds());
+}
+
+std::unordered_set<Particle*> QuadTree::query(const sf::Vector2f point) const {
+	std::unordered_set<Particle*> objectsFound;
+	rootNode->query(point, objectsFound);
+	return objectsFound;
+}
+
+std::unordered_set<Particle*> QuadTree::query(
+	const sf::FloatRect& range) const {
+	std::unordered_set<Particle*> objectsFound;
+	rootNode->query(range, objectsFound);
+	return objectsFound;
+}
+
+QuadTree::Node::Node(const sf::FloatRect& boundary, int capacity)
 	: capacity(capacity), boundary(boundary) {
 	smallestBoundingArea =
 		sf::FloatRect(sf::Vector2f(boundary.left + boundary.width,
@@ -8,66 +72,56 @@ QuadTree::QuadTree(const sf::FloatRect& boundary, unsigned short capacity)
 					  sf::Vector2f(-boundary.width, -boundary.height));
 }
 
-QuadTree::QuadTree(const sf::FloatRect& boundary,
-				   unsigned short capacity,
-				   QuadTree* parentNode)
-	: QuadTree(boundary, capacity) {
-	parentNode = parentNode;
+bool QuadTree::Node::isSmaller(const sf::FloatRect& rect) const {
+	return rect.width <= boundary.width && rect.height <= boundary.height;
 }
 
-QuadTree::~QuadTree() {
-	reset();
+bool QuadTree::Node::isDivided() const {
+	return childNodes[0] != nullptr;
 }
 
-void QuadTree::reset() {
-	divided = false;
-	objects.clear();
-	smallestBoundingArea =
-		sf::FloatRect(sf::Vector2f(boundary.left + boundary.width,
-								   boundary.top + boundary.height),
-					  sf::Vector2f(-boundary.width, -boundary.height));
+void QuadTree::Node::query(const sf::FloatRect& range,
+						   std::unordered_set<Particle*> objectsFound) const {
+	if (!smallestBoundingArea.intersects(range))
+		return;
+
+	if (isDivided()) {
+		for (int i = 0; i < CHILD_NUMBER; ++i)
+			childNodes[i]->query(range, objectsFound);
+	}
+	for (Particle* object : objects) {
+		if (range.intersects(object->getGlobalBounds()))
+			objectsFound.insert(object);
+	}
 }
 
-void QuadTree::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-	if (objects.size() != 0 || divided)
+void QuadTree::Node::query(const sf::Vector2f point,
+						   std::unordered_set<Particle*> objectsFound) const {
+	if (!smallestBoundingArea.contains(point))
+		return;
+
+	if (isDivided()) {
+		for (int i = 0; i < CHILD_NUMBER; ++i)
+			childNodes[i]->query(point, objectsFound);
+	}
+	for (Particle* object : objects) {
+		if (object->getGlobalBounds().contains(point))
+			objectsFound.insert(object);
+	}
+}
+
+void QuadTree::Node::draw(sf::RenderTarget& target,
+						  sf::RenderStates states) const {
+	if (objects.size() != 0 || isDivided())
 		target.draw(boundaryLines);
 
-	if (divided) {
-		target.draw(*northWest, states);
-		target.draw(*northEast, states);
-		target.draw(*southEast, states);
-		target.draw(*southWest, states);
+	if (isDivided()) {
+		for (int i = 0; i < CHILD_NUMBER; ++i)
+			childNodes[i]->draw(target, states);
 	}
 }
 
-void QuadTree::subdivide() {
-	divided = true;
-	const sf::Vector2f dividedSize(boundary.width / 2, boundary.height / 2);
-
-	const sf::FloatRect nw(boundary.getPosition(), dividedSize);
-	const sf::FloatRect ne(nw.getPosition() + sf::Vector2f(dividedSize.x, 0),
-						   nw.getSize());
-	const sf::FloatRect se(
-		nw.getPosition() + sf::Vector2f(dividedSize.x, dividedSize.y),
-		nw.getSize());
-	const sf::FloatRect sw(nw.getPosition() + sf::Vector2f(0, dividedSize.y),
-						   nw.getSize());
-
-	northWest = std::unique_ptr<QuadTree>(new QuadTree(nw, capacity, this));
-	northEast = std::unique_ptr<QuadTree>(new QuadTree(ne, capacity, this));
-	southWest = std::unique_ptr<QuadTree>(new QuadTree(sw, capacity, this));
-	southEast = std::unique_ptr<QuadTree>(new QuadTree(se, capacity, this));
-
-	std::vector<Particle*> objectsCopy = objects;
-	objects.clear();
-	while (!objectsCopy.empty()) {
-		Particle* object = objectsCopy.back();
-		objectsCopy.pop_back();
-		insert(object);
-	}
-}
-
-void QuadTree::insert(Particle* object) {
+void QuadTree::Node::insert(Particle* object) {
 	const sf::FloatRect& objectBounds = object->getGlobalBounds();
 	float minX = std::min(smallestBoundingArea.left, objectBounds.left);
 	float minY = std::min(smallestBoundingArea.top, objectBounds.top);
@@ -96,61 +150,37 @@ void QuadTree::insert(Particle* object) {
 	if (boundary.height < objectBounds.height ||
 		boundary.width < objectBounds.width)
 		objects.push_back(object);
-	else if (divided) {
+	else if (isDivided()) {
 		sf::Vector2f centerPosition = object->getCenterPosition();
-		if (centerPosition.x <= boundary.left + boundary.width / 2.f) {
-			if (centerPosition.y <= boundary.top + boundary.height / 2.f)
-				northWest->insert(object);
-			else
-				southWest->insert(object);
+		int quadrantNumber = 0;
+		if (centerPosition.x > boundary.left + boundary.width / 2.f)
+			quadrantNumber += 1;
+		if (centerPosition.y > boundary.top + boundary.height / 2.f)
+			quadrantNumber += 2;
+		childNodes[quadrantNumber]->insert(object);
 
-		} else {
-			if (centerPosition.y <= boundary.top + boundary.height / 2.f)
-				northEast->insert(object);
-			else
-				southEast->insert(object);
-		}
 	} else {
 		objects.push_back(object);
-		if (!divided && objects.size() > capacity)
+		if (!isDivided() && objects.size() > capacity)
 			subdivide();
 	}
 }
 
-void QuadTree::query(Particle* particle,
-					 std::unordered_set<Particle*>& objectsFound) const {
-	query(particle->getGlobalBounds(), objectsFound);
-}
-
-void QuadTree::query(const sf::Vector2f point,
-					 std::unordered_set<Particle*>& objectsFound) const {
-	if (!smallestBoundingArea.contains(point))
-		return;
-	if (divided) {
-		northWest->query(point, objectsFound);
-		northEast->query(point, objectsFound);
-		southWest->query(point, objectsFound);
-		southEast->query(point, objectsFound);
+void QuadTree::Node::subdivide() {
+	for (int i = 0; i < CHILD_NUMBER; ++i) {
+		childNodes[i] = std::make_unique<Node>(
+			sf::FloatRect(boundary.getPosition() +
+							  sf::Vector2f(boundary.width * (i % 2),
+										   boundary.height * ((i + 1) % 2)),
+						  boundary.getSize() / 2.f),
+			capacity);
 	}
-	for (Particle* object : objects) {
-		if (object->getGlobalBounds().contains(point))
-			objectsFound.insert(object);
-	}
-}
 
-void QuadTree::query(const sf::FloatRect& range,
-					 std::unordered_set<Particle*>& objectsFound) const {
-	if (!smallestBoundingArea.intersects(range))
-		return;
-
-	if (divided) {
-		northWest->query(range, objectsFound);
-		northEast->query(range, objectsFound);
-		southWest->query(range, objectsFound);
-		southEast->query(range, objectsFound);
-	}
-	for (Particle* object : objects) {
-		if (range.intersects(object->getGlobalBounds()))
-			objectsFound.insert(object);
+	std::vector<Particle*> objectsCopy = objects;
+	objects.clear();
+	while (!objectsCopy.empty()) {
+		Particle* object = objectsCopy.back();
+		objectsCopy.pop_back();
+		insert(object);
 	}
 }
