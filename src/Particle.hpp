@@ -12,7 +12,7 @@ class Particle : public sf::Drawable {
 	~Particle();
 
 	void update(const sf::Time& dt, const sf::FloatRect& boundary);
-	void collideWithParticle(Particle& other,
+	bool collideWithParticle(Particle& other,
 							 const float restitutionCoefficient = 1.0f);
 
 	void setPosition(sf::Vector2f position);

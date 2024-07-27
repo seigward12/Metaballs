@@ -109,34 +109,35 @@ bool Particle::isColliding(const Particle& other) const {
 		   (minDistance * minDistance);
 }
 
-void Particle::collideWithParticle(Particle& other,
+bool Particle::collideWithParticle(Particle& other,
 								   const float restitutionCoefficient) {
-	if (isColliding(other)) {
-		sf::Vector2f distance = getCenterPosition() - other.getCenterPosition();
-		sf::Vector2f normal =
-			distance / static_cast<float>(sqrt(distance.x * distance.x +
-											   distance.y * distance.y));
+	if (!isColliding(other))
+		return false;
 
-		const sf::Vector2f relativeVelocity =
-			getVelocity() - other.getVelocity();
+	sf::Vector2f distance = getCenterPosition() - other.getCenterPosition();
+	sf::Vector2f normal =
+		distance / static_cast<float>(
+					   sqrt(distance.x * distance.x + distance.y * distance.y));
 
-		const float vrMinus =
-			normal.x * relativeVelocity.x + normal.y * relativeVelocity.y;
+	const sf::Vector2f relativeVelocity = getVelocity() - other.getVelocity();
 
-		const float massInverseTotal = massInverse + other.massInverse;
-		const float j =
-			-(1 + restitutionCoefficient) * vrMinus / massInverseTotal;
+	const float vrMinus =
+		normal.x * relativeVelocity.x + normal.y * relativeVelocity.y;
 
-		velocity = velocity + j * normal * massInverse;
-		other.velocity = other.velocity - j * normal * other.massInverse;
+	const float massInverseTotal = massInverse + other.massInverse;
+	const float j = -(1 + restitutionCoefficient) * vrMinus / massInverseTotal;
 
-		// avoid overlapping
-		const sf::Vector2f minDistance =
-			(this->getRadius() + other.getRadius()) * normal;
-		const sf::Vector2f repulsion = minDistance - distance;
-		shape.move(repulsion * (massInverse / massInverseTotal));
-		other.shape.move(-repulsion * (other.massInverse / massInverseTotal));
-	}
+	velocity = velocity + j * normal * massInverse;
+	other.velocity = other.velocity - j * normal * other.massInverse;
+
+	// avoid overlapping
+	const sf::Vector2f minDistance =
+		(this->getRadius() + other.getRadius()) * normal;
+	const sf::Vector2f repulsion = minDistance - distance;
+	shape.move(repulsion * (massInverse / massInverseTotal));
+	other.shape.move(-repulsion * (other.massInverse / massInverseTotal));
+
+	return true;
 }
 
 void Particle::setGlobalBoundsTransform(

@@ -223,11 +223,6 @@ void MainScreen::processEvent(const sf::Event& event) {
 }
 
 void MainScreen::update(const sf::Time& dt) {
-	// 3 sections
-	// -1 quadtree clean, can search particles, but not modify their position
-	// -2 modify particle positions, but cant search quadtree because positions
-	// 	modified/ or find a way to modify quadtree to update positions
-	// -3 rebuildQuadTree
 	if (fpsTimer.getElapsedTime().asSeconds() >= 1) {
 		fpsTimer.restart();
 		fpsLabel.setString("FPS: " + std::to_string((int)(1 / dt.asSeconds())));
@@ -253,13 +248,11 @@ void MainScreen::update(const sf::Time& dt) {
 		moveObjects(dt);
 	} else if (selectedParticle != nullptr) {
 		selectedParticle->setPosition(mousePosition);
+		quadTree->update(selectedParticle);
 	}
 
-	quadTree->clear();
-	for (auto& particle : particles) {
-		quadTree->insert(particle.get());
+	for (auto& particle : particles)
 		particle->setColor(DEFAULT_COLOR);
-	}
 
 	for (auto& particle : particles) {
 		std::unordered_set<Particle*> collisions =
@@ -270,7 +263,10 @@ void MainScreen::update(const sf::Time& dt) {
 				continue;
 
 			if (collisionEnabled && !isPaused) {
-				particle->collideWithParticle(*myCollision);
+				if (particle->collideWithParticle(*myCollision)) {
+					quadTree->update(particle.get());
+					quadTree->update(myCollision);
+				}
 			} else {
 				if (particle->isColliding(*myCollision)) {
 					particle->setColor(COLLISION_COLOR);
@@ -428,13 +424,16 @@ void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 }
 
 void MainScreen::moveObjects(const sf::Time& dt) {
-	for (auto& myObject : particles)
-		myObject->update(dt, boundary);
+	for (auto& particle : particles) {
+		particle->update(dt, boundary);
+		quadTree->update(particle.get());
+	}
 }
 
 void MainScreen::initializeObjects(int objectNumber) {
 	if (objectNumber < 0)
 		objectNumber = particles.size();
+	quadTree->clear();
 	particles.clear();
 	for (unsigned short i = 0; i < objectNumber; i++) {
 		addParticle(sf::Vector2f((rand() % (int)boundary.width),
@@ -459,6 +458,7 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
 		(radius / 2) + rand() % static_cast<int>(radius)));
 	particles.back()->setPosition(position);
 	particles.back()->setVelocity(getRandomVelocity(particleSpeed));
+	quadTree->insert(particles.back().get());
 }
 
 void MainScreen::selectParticle() {
@@ -480,6 +480,7 @@ void MainScreen::selectParticle() {
 			selectedParticle->setVelocity(sf::Vector2f(0, 0));
 			selectedParticle->setPosition(mousePosition);
 			selectedParticle->setInfiniteMass(true);
+			quadTree->update(selectedParticle);
 		}
 	}
 }
@@ -513,7 +514,7 @@ void MainScreen::setParticuleSpeed(const tgui::String& particuleSpeedString) {
 
 void MainScreen::setTreeNodeCapacity(
 	const tgui::String& newTreeNodeCapacityString) {
-	int newTreeNodeCapacity = newTreeNodeCapacityString.toUInt();
+	unsigned int newTreeNodeCapacity = newTreeNodeCapacityString.toUInt();
 	if (treeNodeCapacity != newTreeNodeCapacity) {
 		treeNodeCapacity = newTreeNodeCapacity;
 		quadTree = std::make_unique<QuadTree>(boundary, treeNodeCapacity);
