@@ -9,7 +9,6 @@
 class QuadTree : public sf::Drawable {
    public:
 	QuadTree(const sf::FloatRect& boundary, int capacity);
-	~QuadTree();
 
 	void clear();
 	void insert(Particle* object);
@@ -22,7 +21,7 @@ class QuadTree : public sf::Drawable {
 	const sf::FloatRect boundary;
 
 	class Node;
-	Node* rootNode;
+	std::unique_ptr<Node> rootNode;
 	std::unordered_map<Particle*, Node*> objectsNode;
 	int capacity;
 };

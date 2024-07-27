@@ -1,8 +1,9 @@
 #include "QuadTree.hpp"
+#include <algorithm>
 
 class QuadTree::Node : public sf::Drawable {
    public:
-	Node(const sf::FloatRect& boundary, int capacity);
+	Node(const sf::FloatRect& boundary, int capacity, Node* parentNode);
 	void insert(Particle* object);
 	void query(const sf::Vector2f, std::unordered_set<Particle*>&) const;
 	void query(const sf::FloatRect&, std::unordered_set<Particle*>&) const;
@@ -11,6 +12,8 @@ class QuadTree::Node : public sf::Drawable {
    private:
 	void subdivide();
 	bool isDivided() const;
+	bool isEmpty() const;
+	void updateSmallestBoundary();
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	static const int CHILD_NUMBER = 4;
@@ -26,16 +29,11 @@ class QuadTree::Node : public sf::Drawable {
 
 QuadTree::QuadTree(const sf::FloatRect& boundary, int capacity)
 	: capacity(capacity), boundary(boundary) {
-	rootNode = new Node(boundary, capacity);
-}
-
-QuadTree::~QuadTree() {
-	delete rootNode;
+	rootNode = std::make_unique<Node>(boundary, capacity, nullptr);
 }
 
 void QuadTree::clear() {
-	delete rootNode;
-	rootNode = new Node(boundary, capacity);
+	rootNode = std::make_unique<Node>(boundary, capacity, nullptr);
 }
 
 void QuadTree::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -63,12 +61,13 @@ std::unordered_set<Particle*> QuadTree::query(
 	return objectsFound;
 }
 
-QuadTree::Node::Node(const sf::FloatRect& boundary, int capacity)
-	: capacity(capacity), boundary(boundary) {
+QuadTree::Node::Node(const sf::FloatRect& boundary,
+					 int capacity,
+					 Node* parentNode)
+	: capacity(capacity), boundary(boundary), parentNode(parentNode) {
 	smallestBoundingArea =
-		sf::FloatRect(sf::Vector2f(boundary.left + boundary.width,
-								   boundary.top + boundary.height),
-					  sf::Vector2f(-boundary.width, -boundary.height));
+		sf::FloatRect(boundary.getPosition() + boundary.getSize(),
+					  boundary.getSize() * (-1.f));
 }
 
 bool QuadTree::Node::isSmaller(const sf::FloatRect& rect) const {
@@ -77,6 +76,10 @@ bool QuadTree::Node::isSmaller(const sf::FloatRect& rect) const {
 
 bool QuadTree::Node::isDivided() const {
 	return childNodes[0] != nullptr;
+}
+
+bool QuadTree::Node::isEmpty() const {
+	return !(objects.size() > 0 || isDivided());
 }
 
 void QuadTree::Node::query(const sf::FloatRect& range,
@@ -122,34 +125,11 @@ void QuadTree::Node::draw(sf::RenderTarget& target,
 
 void QuadTree::Node::insert(Particle* object) {
 	const sf::FloatRect& objectBounds = object->getGlobalBounds();
-	float minX = std::min(smallestBoundingArea.left, objectBounds.left);
-	float minY = std::min(smallestBoundingArea.top, objectBounds.top);
-	float maxX =
-		std::max(smallestBoundingArea.left + smallestBoundingArea.width,
-				 objectBounds.left + objectBounds.width);
-	float maxY =
-		std::max(smallestBoundingArea.top + smallestBoundingArea.height,
-				 objectBounds.top + objectBounds.height);
-	smallestBoundingArea.left = minX;
-	smallestBoundingArea.top = minY;
-	smallestBoundingArea.width = maxX - smallestBoundingArea.left;
-	smallestBoundingArea.height = maxY - smallestBoundingArea.top;
-	if (boundaryLines[0].position != smallestBoundingArea.getPosition()) {
-		boundaryLines[0].position = smallestBoundingArea.getPosition();
-		boundaryLines[1].position.y = minY;
-		boundaryLines[3].position.x = minX;
-		boundaryLines[4].position = smallestBoundingArea.getPosition();
-	}
-	if (boundaryLines[2].position != sf::Vector2f(maxX, maxY)) {
-		boundaryLines[2].position = sf::Vector2f(maxX, maxY);
-		boundaryLines[1].position.x = maxX;
-		boundaryLines[3].position.y = maxY;
-	}
-
 	if (boundary.height < objectBounds.height ||
-		boundary.width < objectBounds.width)
+		boundary.width < objectBounds.width) {
 		objects.push_back(object);
-	else if (isDivided()) {
+		updateSmallestBoundary();
+	} else if (isDivided()) {
 		sf::Vector2f centerPosition = object->getCenterPosition();
 		int quadrantNumber = 0;
 		if (centerPosition.x > boundary.left + boundary.width / 2.f)
@@ -162,6 +142,7 @@ void QuadTree::Node::insert(Particle* object) {
 		objects.push_back(object);
 		if (!isDivided() && objects.size() > capacity)
 			subdivide();
+		updateSmallestBoundary();
 	}
 }
 
@@ -171,13 +152,13 @@ void QuadTree::Node::subdivide() {
 	sf::FloatRect ne = nw;
 	ne.left += dividedSize.x;
 	sf::FloatRect sw = nw;
-	ne.top += dividedSize.y;
+	sw.top += dividedSize.y;
 	sf::FloatRect se = sw;
 	se.left += dividedSize.x;
-	childNodes[0] = std::make_unique<Node>(nw, capacity);
-	childNodes[1] = std::make_unique<Node>(ne, capacity);
-	childNodes[2] = std::make_unique<Node>(sw, capacity);
-	childNodes[3] = std::make_unique<Node>(se, capacity);
+	childNodes[0] = std::make_unique<Node>(nw, capacity, this);
+	childNodes[1] = std::make_unique<Node>(ne, capacity, this);
+	childNodes[2] = std::make_unique<Node>(sw, capacity, this);
+	childNodes[3] = std::make_unique<Node>(se, capacity, this);
 
 	std::vector<Particle*> objectsCopy = objects;
 	objects.clear();
@@ -185,5 +166,54 @@ void QuadTree::Node::subdivide() {
 		Particle* object = objectsCopy.back();
 		objectsCopy.pop_back();
 		insert(object);
+	}
+}
+
+void QuadTree::Node::updateSmallestBoundary() {
+	float minX = boundary.left + boundary.width,
+		  minY = boundary.top + boundary.height, maxX = boundary.left,
+		  maxY = boundary.top;
+	// float minX = INFINITY, minY = INFINITY, maxX = -INFINITY, maxY = -INFINITY;
+	bool hasAABBChanged = false;
+
+	if (isDivided()) {
+		for (int i = 0; i < CHILD_NUMBER; ++i) {
+			// if (!childNodes[i]->isEmpty()) {
+			const sf::FloatRect childBounds =
+				childNodes[i]->smallestBoundingArea;
+			minX = std::min(minX, childBounds.left);
+			minY = std::min(minY, childBounds.top);
+			maxX = std::max(maxX, childBounds.left + childBounds.width);
+			maxY = std::max(maxY, childBounds.top + childBounds.height);
+			// }
+		}
+	}
+	for (Particle* object : objects) {
+		const sf::FloatRect objectBounds = object->getGlobalBounds();
+		minX = std::min(minX, objectBounds.left);
+		minY = std::min(minY, objectBounds.top);
+		maxX = std::max(maxX, objectBounds.left + objectBounds.width);
+		maxY = std::max(maxY, objectBounds.top + objectBounds.height);
+	}
+
+	smallestBoundingArea = sf::FloatRect(
+		sf::Vector2f(minX, minY), sf::Vector2f(maxX - minX, maxY - minY));
+
+	if (boundaryLines[0].position != smallestBoundingArea.getPosition()) {
+		hasAABBChanged = true;
+		boundaryLines[0].position = smallestBoundingArea.getPosition();
+		boundaryLines[1].position.y = minY;
+		boundaryLines[3].position.x = minX;
+		boundaryLines[4].position = smallestBoundingArea.getPosition();
+	}
+	if (boundaryLines[2].position != sf::Vector2f(maxX, maxY)) {
+		hasAABBChanged = true;
+		boundaryLines[2].position = sf::Vector2f(maxX, maxY);
+		boundaryLines[1].position.x = maxX;
+		boundaryLines[3].position.y = maxY;
+	}
+
+	if (hasAABBChanged && parentNode != nullptr) {
+		parentNode->updateSmallestBoundary();
 	}
 }
