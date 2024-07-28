@@ -139,11 +139,12 @@ void QuadTree::Node::subdivide(QuadTree* quadTree) {
 	childNodes[3] = std::make_unique<Node>(se, capacity, this);
 
 	for (auto it = objects.begin(); it != objects.end();) {
-		if (!isSmaller((*it)->getGlobalBounds())) {
+		if (isSmaller((*it)->getGlobalBounds())) {
 			++it;
 		} else {
 			Particle* particle = *it;
 			it = objects.erase(it);	 //it is now potentially end
+			quadTree->objectsNode.erase(particle);
 			childNodes[findEnglobingQuadrant(particle->getCenterPosition())]
 				->insert(particle, quadTree);
 		}
