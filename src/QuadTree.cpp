@@ -118,6 +118,7 @@ void QuadTree::Node::insert(Particle* object, QuadTree* quadTree) {
 void QuadTree::Node::erase(Particle* object, QuadTree* quadtree) {
 	objects.erase(object);
 	quadtree->objectsNode.erase(object);
+	updateSmallestBoundary();
 }
 
 void QuadTree::Node::update(Particle* object, QuadTree* quadTree) {
@@ -171,22 +172,19 @@ void QuadTree::Node::updateSmallestBoundary() {
 		  maxY = boundary.top;
 	bool hasAABBChanged = false;
 
+	std::vector<sf::FloatRect> boundsVector;
 	if (isDivided()) {
-		for (int i = 0; i < CHILD_NUMBER; ++i) {
-			const sf::FloatRect childBounds =
-				childNodes[i]->smallestBoundingArea;
-			minX = std::min(minX, childBounds.left);
-			minY = std::min(minY, childBounds.top);
-			maxX = std::max(maxX, childBounds.left + childBounds.width);
-			maxY = std::max(maxY, childBounds.top + childBounds.height);
-		}
+		for (int i = 0; i < CHILD_NUMBER; ++i)
+			boundsVector.push_back(childNodes[i]->smallestBoundingArea);
 	}
-	for (Particle* object : objects) {
-		const sf::FloatRect objectBounds = object->getGlobalBounds();
-		minX = std::min(minX, objectBounds.left);
-		minY = std::min(minY, objectBounds.top);
-		maxX = std::max(maxX, objectBounds.left + objectBounds.width);
-		maxY = std::max(maxY, objectBounds.top + objectBounds.height);
+	for (Particle* object : objects)
+		boundsVector.push_back(object->getGlobalBounds());
+
+	for (const sf::FloatRect& bound : boundsVector) {
+		minX = std::min(minX, bound.left);
+		minY = std::min(minY, bound.top);
+		maxX = std::max(maxX, bound.left + bound.width);
+		maxY = std::max(maxY, bound.top + bound.height);
 	}
 
 	smallestBoundingArea = sf::FloatRect(
