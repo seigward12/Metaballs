@@ -7,12 +7,11 @@ class QuadTree::Node : public sf::Drawable {
 		 unsigned int capacity,
 		 Node* parentNode);
 	void insert(Particle* object, QuadTree*);
+	void erase(Particle* object, QuadTree*);
 	void update(Particle* object, QuadTree*);
 	void query(const sf::Vector2f, std::unordered_set<Particle*>&) const;
 	void query(const sf::FloatRect&, std::unordered_set<Particle*>&) const;
 	bool isSmaller(const sf::FloatRect&) const;
-
-	std::unordered_set<Particle*> objects;
 
    private:
 	void subdivide(QuadTree* quadTree);
@@ -30,6 +29,7 @@ class QuadTree::Node : public sf::Drawable {
 	sf::VertexArray boundaryLines{sf::LineStrip, 5};
 	const sf::FloatRect boundary;
 	sf::FloatRect smallestBoundingArea;
+	std::unordered_set<Particle*> objects;
 };
 
 QuadTree::Node::Node(const sf::FloatRect& boundary,
@@ -113,6 +113,11 @@ void QuadTree::Node::insert(Particle* object, QuadTree* quadTree) {
 			updateSmallestBoundary();
 		}
 	}
+}
+
+void QuadTree::Node::erase(Particle* object, QuadTree* quadtree) {
+	objects.erase(object);
+	quadtree->objectsNode.erase(object);
 }
 
 void QuadTree::Node::update(Particle* object, QuadTree* quadTree) {
@@ -207,11 +212,14 @@ void QuadTree::Node::updateSmallestBoundary() {
 }
 
 QuadTree::QuadTree(const sf::FloatRect& boundary, unsigned int capacity)
-	: capacity(capacity), boundary(boundary) {
+	: boundary(boundary), capacity(capacity) {
 	rootNode = std::make_unique<Node>(boundary, capacity, nullptr);
 }
 
+QuadTree::~QuadTree() = default;
+
 void QuadTree::clear() {
+	objectsNode.clear();
 	rootNode = std::make_unique<Node>(boundary, capacity, nullptr);
 }
 
@@ -227,8 +235,7 @@ void QuadTree::update(Particle* object) {
 	const auto& objectNode = objectsNode.find(object);
 	if (objectNode != objectsNode.end()) {
 		Node* node = objectNode->second;
-		objectsNode.erase(object);
-		node->objects.erase(object);
+		node->erase(object, this);
 		node->update(object, this);
 	}
 }
