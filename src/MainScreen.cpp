@@ -295,11 +295,9 @@ void MainScreen::update(const sf::Time& dt) {
 		for (sf::FloatRect& bound : treeBounds) {
 			std::unordered_set<Particle*> boundParticles =
 				quadTree->query(scaleBounds(bound));
-			if (boundParticles.size() <= 8) {
-				shaderBounds.push_back(bound);
-				shaderParticles.push_back(std::vector<Particle*>(
-					boundParticles.begin(), boundParticles.end()));
-			}
+			shaderBounds.push_back(bound);
+			shaderParticles.push_back(std::vector<Particle*>(
+				boundParticles.begin(), boundParticles.end()));
 		}
 	}
 }
@@ -310,9 +308,14 @@ void MainScreen::draw(sf::RenderTarget& target) {
 		states.shader = &metaballsShader;
 
 		for (int i = 0, boundsNb = shaderBounds.size(); i < boundsNb; ++i) {
-			const size_t ballsNb = shaderParticles[i].size();
+			size_t ballsNb = shaderParticles[i].size();
 			if (ballsNb <= 0)
 				continue;
+
+			if (ballsNb >
+				16)	 //trouver un autre moyen d<avoir toutes les balles
+				ballsNb = 16;
+
 			metaballsShader.setUniform("n_balls", static_cast<int>(ballsNb));
 
 			std::vector<sf::Glsl::Vec2> ballPositions;
