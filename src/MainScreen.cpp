@@ -312,9 +312,24 @@ void MainScreen::draw(sf::RenderTarget& target) {
 			if (ballsNb <= 0)
 				continue;
 
-			if (ballsNb >
-				16)	 //trouver un autre moyen d<avoir toutes les balles
+			//trouver un autre moyen d<avoir toutes les balles
+			if (ballsNb > 16) {
 				ballsNb = 16;
+				sf::Vector2f boundsCenter = shaderBounds[i].getPosition() +
+											shaderBounds[i].getSize() / 2.f;
+				std::sort(
+					shaderParticles[i].begin(), shaderParticles[i].end(),
+					[&boundsCenter](Particle* particle1, Particle* particle2) {
+						sf::Vector2f particle1Vec =
+							particle1->getCenterPosition() - boundsCenter;
+						sf::Vector2f particle2Vec =
+							particle2->getCenterPosition() - boundsCenter;
+						return particle1Vec.x * particle1Vec.x +
+								   particle1Vec.y * particle1Vec.y <
+							   particle2Vec.x * particle2Vec.x +
+								   particle2Vec.y * particle2Vec.y;
+					});
+			}
 
 			metaballsShader.setUniform("n_balls", static_cast<int>(ballsNb));
 
