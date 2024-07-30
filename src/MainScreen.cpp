@@ -16,18 +16,6 @@ constexpr const char* STRICLY_POSITIVE_INT_REGEX = "^[1-9][0-9]*$";
 constexpr uint8_t BUTTON_TEXT_SIZE = 28;
 constexpr float BUTTONS_SPACING = 0.05f;
 
-namespace BoundsTransform {
-BoundsTransformFct scaleParticle =
-	[](const sf::FloatRect& bounds) -> sf::FloatRect {
-	sf::FloatRect trasformedBounds(bounds);
-	trasformedBounds.top -= bounds.height;
-	trasformedBounds.left -= bounds.width;
-	trasformedBounds.width *= 3.0f;
-	trasformedBounds.height *= 3.0f;
-	return trasformedBounds;
-};
-}  // namespace BoundsTransform
-
 sf::Vector2f getRandomVelocity(const float velocity) {
 	return velocity == 0.f
 			   ? sf::Vector2f()
@@ -290,134 +278,72 @@ void MainScreen::update(const sf::Time& dt) {
 
 	oldMousePosition = mousePosition;
 
+	shaderBounds.clear();
+	shaderParticles.clear();
 	if (shaderEnabled) {
-		Particle::setGlobalBoundsTransform(BoundsTransform::scaleParticle);
-		particlesGroupsForShader.clear();
-		std::unordered_map<Particle*, std::unordered_set<Particle*>*>
-			visitedParticles;
-		std::unordered_set<Particle*> neighbors;
-		std::function<void(const Particle* const)> scaleAndQueryParticle =
-			[&](const Particle* const particleToScaleAndQuery) {
-				neighbors.clear();
-				neighbors =
-					quadTree->query(particleToScaleAndQuery->getGlobalBounds());
-			};
-		for (auto& particlePtr : particles) {
-			Particle* particle = particlePtr.get();
-			if (visitedParticles.contains(particle))
-				continue;
+		const auto scaleBounds =
+			[](const sf::FloatRect& bounds) -> sf::FloatRect {
+			sf::FloatRect trasformedBounds(bounds);
+			trasformedBounds.top -= bounds.height / 2.f;
+			trasformedBounds.left -= bounds.width / 2.f;
+			trasformedBounds.width *= 2.f;
+			trasformedBounds.height *= 2.f;
+			return trasformedBounds;
+		};
 
-			scaleAndQueryParticle(particle);
-
-			Particle* firstAlreadyVisitedParticle = nullptr;
-			std::unordered_set<Particle*>* particleGroup = nullptr;
-			for (Particle* neighbor : neighbors) {
-				if (visitedParticles.contains(neighbor)) {
-					firstAlreadyVisitedParticle = neighbor;
-					break;
-				}
-			}
-			if (firstAlreadyVisitedParticle ==
-				nullptr) {	// fontionne parceque le query retourne la même particule
-				particlesGroupsForShader.emplace(
-					particle, std::unordered_set<Particle*>());
-				particleGroup = &particlesGroupsForShader.at(particle);
-			} else
-				particleGroup =
-					visitedParticles.at(firstAlreadyVisitedParticle);
-
-			for (Particle* neighbor : neighbors) {
-				if (visitedParticles.contains(neighbor)) {
-					std::unordered_set<Particle*>* neighborGroup =
-						visitedParticles.at(neighbor);
-					if (neighborGroup == particleGroup)
-						continue;
-					Particle* groupToRemoveKey = nullptr;
-					for (Particle* neighborOfNeighbor : *neighborGroup) {
-						if (particlesGroupsForShader.contains(
-								neighborOfNeighbor))
-							groupToRemoveKey = neighborOfNeighbor;
-						visitedParticles[neighborOfNeighbor] = neighborGroup;
-					}
-					particlesGroupsForShader.erase(groupToRemoveKey);
-				} else {
-					visitedParticles.emplace(neighbor, particleGroup);
-					particleGroup->insert(neighbor);
-				}
+		std::vector<sf::FloatRect> treeBounds = quadTree->findAllBounds();
+		for (sf::FloatRect& bound : treeBounds) {
+			std::unordered_set<Particle*> boundParticles =
+				quadTree->query(scaleBounds(bound));
+			if (boundParticles.size() <= 8) {
+				shaderBounds.push_back(bound);
+				shaderParticles.push_back(std::vector<Particle*>(
+					boundParticles.begin(), boundParticles.end()));
 			}
 		}
-		Particle::resetGlobalBoundsTransfom();
 	}
 }
 
-void MainScreen::draw(sf::RenderTarget& target, sf::RenderStates states) const {
+void MainScreen::draw(sf::RenderTarget& target) {
 	if (shaderEnabled) {
-		for (const auto& [_, particleGroup] : particlesGroupsForShader) {
-			float top =
-				(*std::min_element(particleGroup.begin(), particleGroup.end(),
-								   [](Particle* lhs, Particle* rhs) {
-									   return lhs->getGlobalBounds().top <
-											  rhs->getGlobalBounds().top;
-								   }))
-					->getGlobalBounds()
-					.top;
-			float left =
-				(*std::min_element(particleGroup.begin(), particleGroup.end(),
-								   [](Particle* lhs, Particle* rhs) {
-									   return lhs->getGlobalBounds().left <
-											  rhs->getGlobalBounds().left;
-								   }))
-					->getGlobalBounds()
-					.left;
-			Particle* rightParticle = (*std::max_element(
-				particleGroup.begin(), particleGroup.end(),
-				[](Particle* lhs, Particle* rhs) {
-					return lhs->getCenterPosition().x + lhs->getRadius() <
-						   rhs->getCenterPosition().x + rhs->getRadius();
-				}));
-			float right = rightParticle->getCenterPosition().x +
-						  rightParticle->getRadius();
-			Particle* downParticle = (*std::max_element(
-				particleGroup.begin(), particleGroup.end(),
-				[](Particle* lhs, Particle* rhs) {
-					return lhs->getCenterPosition().y + lhs->getRadius() <
-						   rhs->getCenterPosition().y + rhs->getRadius();
-				}));
-			float down =
-				downParticle->getCenterPosition().y + downParticle->getRadius();
-			sf::RectangleShape groupMaxRectangle(
-				sf::Vector2f(right - left, down - top));
-			groupMaxRectangle.setPosition(sf::Vector2f(left, top));
-			sf::FloatRect groupBounds = groupMaxRectangle.getGlobalBounds();
-			sf::FloatRect firstBound =
-				(*particleGroup.begin())->getGlobalBounds();
-			groupMaxRectangle.setFillColor(sf::Color(120, 120, 120, 120));
-			target.draw(groupMaxRectangle, states);
-			///
-			// states.shader = &metaballsShader;
-			// target.draw(boundaryShape, states);
-			// states.shader = nullptr;
+		sf::RenderStates states;
+		states.shader = &metaballsShader;
+		for (int i = 0; i < shaderBounds.size(); ++i) {
+			metaballsShader.setUniform(
+				"n_balls", static_cast<int>(shaderParticles[i].size()));
+
+			std::array<sf::Glsl::Vec2, 50> ballPositions;
+			std::array<float, 50> ballRadius;
+			for (int ballIndex = 0; ballIndex < shaderParticles[i].size();
+				 ++ballIndex) {
+				ballRadius[ballIndex] =
+					shaderParticles[i][ballIndex]->getRadius();
+				ballPositions[ballIndex] =
+					shaderParticles[i][ballIndex]->getCenterPosition();
+			}
+
+			metaballsShader.setUniformArray(
+				"ballPositions", ballPositions.data(), shaderBounds.size());
+			metaballsShader.setUniformArray("ballRadius", ballRadius.data(),
+											shaderBounds.size());
+
+			sf::RectangleShape a(shaderBounds[i].getSize());
+			a.setPosition(shaderBounds[i].getPosition());
+			target.draw(a, states);
 		}
-		for (auto& myObject : particles) {
-			sf::FloatRect a =
-				BoundsTransform::scaleParticle(myObject->getGlobalBounds());
-			sf::RectangleShape b(sf::Vector2f(a.width, a.height));
-			b.setFillColor(sf::Color(255, 0, 0, 50));
-			b.setPosition(a.getPosition());
-			target.draw(b, states);
-		}
+		states.shader = nullptr;
 	} else {
 		for (auto& myObject : particles)
-			target.draw(*myObject, states);
+			target.draw(*myObject);
 	}
 
 	if (showQuadTree)
-		target.draw(*quadTree, states);
+		target.draw(*quadTree);
 
 	if (showMouseRect)
-		target.draw(mouseRect, states);
+		target.draw(mouseRect);
 
-	target.draw(fpsLabel, states);
+	target.draw(fpsLabel);
 
 	if (selectedParticle != nullptr)
 		selectedParticle->setColor(sf::Color::Yellow);
@@ -439,7 +365,6 @@ void MainScreen::initializeObjects(int objectNumber) {
 		addParticle(sf::Vector2f((rand() % (int)boundary.width),
 								 ((rand() % (int)boundary.height))));
 	}
-	metaballsShader.setUniform("n_balls", objectNumber);
 }
 
 void MainScreen::brush() {

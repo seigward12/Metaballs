@@ -2,10 +2,6 @@
 #include <SFML/Graphics.hpp>
 #include <functional>
 
-namespace BoundsTransform {
-typedef sf::FloatRect (*BoundsTransformFct)(const sf::FloatRect&);
-}  // namespace BoundsTransform
-
 class Particle : public sf::Drawable {
    public:
 	explicit Particle(float radius);
@@ -30,16 +26,10 @@ class Particle : public sf::Drawable {
 
 	bool isColliding(const Particle& other) const;
 
-	static void setGlobalBoundsTransform(
-		BoundsTransform::BoundsTransformFct boundsModification);
-	static void resetGlobalBoundsTransfom();
-
    private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 	sf::CircleShape shape;
 	sf::Vector2f velocity;
 	float massInverse;
-
-	static BoundsTransform::BoundsTransformFct boundModification;
 };

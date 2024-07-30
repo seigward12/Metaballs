@@ -18,6 +18,8 @@ class QuadTree : public sf::Drawable {
 	std::unordered_set<Particle*> query(const sf::Vector2f point) const;
 	std::unordered_set<Particle*> query(const sf::FloatRect& range) const;
 
+	std::vector<sf::FloatRect> findAllBounds() const;
+
    private:
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

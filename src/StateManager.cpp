@@ -47,7 +47,7 @@ void StateManager::run() {
 			window.close();
 
 		window.clear();
-		window.draw(*state);
+		state->draw(window);
 		gui.draw();
 		window.display();
 	}

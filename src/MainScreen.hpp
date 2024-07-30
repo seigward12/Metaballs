@@ -29,6 +29,7 @@ class MainScreen : public State {
 
 	void processEvent(const sf::Event& event) override;
 	void update(const sf::Time& dt) override;
+	void draw(sf::RenderTarget& target) override;
 
 	// editBoxes methods
 	void setParticuleCount(const tgui::String&);
@@ -74,9 +75,8 @@ class MainScreen : public State {
 	sf::Clock fpsTimer;
 
 	sf::Shader metaballsShader;
-	// std::vector<std::array<Particle*, SHADER_PARTICLE_GROUP_SIZE>>
-	std::unordered_map<Particle*, std::unordered_set<Particle*>>
-		particlesGroupsForShader;
+	std::vector<sf::FloatRect> shaderBounds;
+	std::vector<std::vector<Particle*>> shaderParticles;
 
 	tgui::EditBox::Ptr particulesCountInput;
 
@@ -84,7 +84,5 @@ class MainScreen : public State {
 	void moveObjects(const sf::Time& dt);
 	void addParticle(const sf::Vector2f& position);
 	void brush();
-	void updateSelectedParticle(const sf::Vector2f& position);
 	void selectParticle();
-	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };

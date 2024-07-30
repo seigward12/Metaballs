@@ -1,17 +1,6 @@
 #include "Particle.hpp"
 #include <cmath>
 
-using namespace BoundsTransform;
-
-namespace BoundsTransform {
-BoundsTransformFct sameGlobalBounds =
-	[](const sf::FloatRect& bounds) -> sf::FloatRect { return bounds; };
-// peut également utiliser une fonction normale
-// sf::FloatRect sameGlobalBounds(const sf::FloatRect& bounds) {
-}  // namespace BoundsTransform
-BoundsTransform::BoundsTransformFct Particle::boundModification =
-	BoundsTransform::sameGlobalBounds;
-
 Particle::Particle(const float radius) {
 	setRadius(radius);
 	setPosition(sf::Vector2f(0, 0));
@@ -97,8 +86,7 @@ sf::CircleShape Particle::getShape() const {
 }
 
 sf::FloatRect Particle::getGlobalBounds() const {
-	// return boundModification(shape.getGlobalBounds());
-	return boundModification(shape.getGlobalBounds());
+	return shape.getGlobalBounds();
 }
 
 bool Particle::isColliding(const Particle& other) const {
@@ -138,12 +126,4 @@ bool Particle::collideWithParticle(Particle& other,
 	other.shape.move(-repulsion * (other.massInverse / massInverseTotal));
 
 	return true;
-}
-
-void Particle::setGlobalBoundsTransform(
-	BoundsTransformFct _boundsModification) {
-	boundModification = _boundsModification;
-}
-void Particle::resetGlobalBoundsTransfom() {
-	boundModification = BoundsTransform::sameGlobalBounds;
 }

@@ -8,15 +8,16 @@ class QuadTree::Node : public sf::Drawable {
 		 Node* parentNode);
 	void insert(Particle* object, QuadTree*);
 	void erase(Particle* object, QuadTree*);
-	void update(Particle* object, QuadTree*);
+	void update(Particle* object, QuadTree*, bool isObjectContainerNode);
 	void query(const sf::Vector2f, std::unordered_set<Particle*>&) const;
 	void query(const sf::FloatRect&, std::unordered_set<Particle*>&) const;
 	bool isSmaller(const sf::FloatRect&) const;
+	bool isDivided() const;
+	bool isEmpty() const;
+	void addBounds(std::vector<sf::FloatRect>&) const;
 
    private:
 	void subdivide(QuadTree* quadTree);
-	bool isDivided() const;
-	bool isEmpty() const;
 	void updateSmallestBoundary();
 	int findEnglobingQuadrant(const sf::Vector2f& point);
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -119,14 +120,28 @@ void QuadTree::Node::erase(Particle* object, QuadTree* quadtree) {
 	objects.erase(object);
 	quadtree->objectsNode.erase(object);
 	updateSmallestBoundary();
+
+	// Node* node = this;	//TODO trouver un moyen de de undivide un node
+	// while (node->parentNode != nullptr) {
+	// 	if (isDivided) {
+	// 		if (childNodes[0]->isEmp)
+	// 	}
+	// }
 }
 
-void QuadTree::Node::update(Particle* object, QuadTree* quadTree) {
+void QuadTree::Node::update(Particle* object,
+							QuadTree* quadTree,
+							bool isObjectContainerNode) {
 	if (boundary.contains(object->getCenterPosition()) ||
 		parentNode == nullptr) {
-		insert(object, quadTree);
+		if (isObjectContainerNode)
+			updateSmallestBoundary();
+		else
+			insert(object, quadTree);
 	} else {
-		parentNode->update(object, quadTree);
+		if (isObjectContainerNode)
+			erase(object, quadTree);
+		parentNode->update(object, quadTree, false);
 	}
 }
 
@@ -209,6 +224,15 @@ void QuadTree::Node::updateSmallestBoundary() {
 	}
 }
 
+void QuadTree::Node::addBounds(std::vector<sf::FloatRect>& boundsVector) const {
+	if (isDivided()) {
+		for (int i = 0; i < CHILD_NUMBER; ++i)
+			childNodes[0]->addBounds(boundsVector);
+	} else {
+		boundsVector.push_back(boundary);
+	}
+}
+
 QuadTree::QuadTree(const sf::FloatRect& boundary, unsigned int capacity)
 	: boundary(boundary), capacity(capacity) {
 	rootNode = std::make_unique<Node>(boundary, capacity, nullptr);
@@ -232,9 +256,7 @@ void QuadTree::insert(Particle* object) {
 void QuadTree::update(Particle* object) {
 	const auto& objectNode = objectsNode.find(object);
 	if (objectNode != objectsNode.end()) {
-		Node* node = objectNode->second;
-		node->erase(object, this);
-		node->update(object, this);
+		objectNode->second->update(object, this, true);
 	}
 }
 
@@ -253,4 +275,10 @@ std::unordered_set<Particle*> QuadTree::query(
 	std::unordered_set<Particle*> objectsFound;
 	rootNode->query(range, objectsFound);
 	return objectsFound;
+}
+
+std::vector<sf::FloatRect> QuadTree::findAllBounds() const {
+	std::vector<sf::FloatRect> nodesBounds;
+	rootNode->addBounds(nodesBounds);
+	return nodesBounds;
 }
