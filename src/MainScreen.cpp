@@ -308,24 +308,27 @@ void MainScreen::draw(sf::RenderTarget& target) {
 	if (shaderEnabled) {
 		sf::RenderStates states;
 		states.shader = &metaballsShader;
-		for (int i = 0; i < shaderBounds.size(); ++i) {
+
+		for (int i = 0, boundsNb = shaderBounds.size(); i < boundsNb; ++i) {
 			metaballsShader.setUniform(
 				"n_balls", static_cast<int>(shaderParticles[i].size()));
 
-			std::array<sf::Glsl::Vec2, 50> ballPositions;
-			std::array<float, 50> ballRadius;
-			for (int ballIndex = 0; ballIndex < shaderParticles[i].size();
-				 ++ballIndex) {
-				ballRadius[ballIndex] =
-					shaderParticles[i][ballIndex]->getRadius();
-				ballPositions[ballIndex] =
-					shaderParticles[i][ballIndex]->getCenterPosition();
+			const size_t ballsNb = shaderParticles[i].size();
+			std::vector<sf::Glsl::Vec2> ballPositions;
+			ballPositions.reserve(ballsNb);
+			std::vector<float> ballRadius;
+			ballRadius.reserve(ballsNb);
+			for (int ballIndex = 0; ballIndex < ballsNb; ++ballIndex) {
+				ballRadius.push_back(
+					shaderParticles[i][ballIndex]->getRadius());
+				ballPositions.push_back(
+					shaderParticles[i][ballIndex]->getCenterPosition());
 			}
 
 			metaballsShader.setUniformArray(
-				"ballPositions", ballPositions.data(), shaderBounds.size());
+				"ballPositions", ballPositions.data(), ballPositions.size());
 			metaballsShader.setUniformArray("ballRadius", ballRadius.data(),
-											shaderBounds.size());
+											ballRadius.size());
 
 			sf::RectangleShape a(shaderBounds[i].getSize());
 			a.setPosition(shaderBounds[i].getPosition());

@@ -159,7 +159,7 @@ void QuadTree::Node::subdivide(QuadTree* quadTree) {
 	childNodes[2] = std::make_unique<Node>(sw, capacity, this);
 	childNodes[3] = std::make_unique<Node>(se, capacity, this);
 
-	for (auto it = objects.begin(); it != objects.end();) {
+	for (auto it = objects.begin(), endIt = objects.end(); it != endIt;) {
 		if (isSmaller((*it)->getGlobalBounds())) {
 			++it;
 		} else {
@@ -227,7 +227,7 @@ void QuadTree::Node::updateSmallestBoundary() {
 void QuadTree::Node::addBounds(std::vector<sf::FloatRect>& boundsVector) const {
 	if (isDivided()) {
 		for (int i = 0; i < CHILD_NUMBER; ++i)
-			childNodes[0]->addBounds(boundsVector);
+			childNodes[i]->addBounds(boundsVector);
 	} else {
 		boundsVector.push_back(boundary);
 	}
