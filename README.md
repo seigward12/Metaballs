@@ -1,3 +1,13 @@
+# My Metaballs project
+
+using :
+- CMake to build project
+- Loose quadtree for collision detection
+- glsl for metaballs effet
+- SFML library for drawing and inputs
+- TGUI for widgets
+
+
 ### to install dependencies on linux:
 $sudo apt update
 
