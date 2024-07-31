@@ -225,7 +225,7 @@ void QuadTree::Node::updateSmallestBoundary() {
 }
 
 void QuadTree::Node::addBounds(std::vector<sf::FloatRect>& boundsVector) const {
-	if (isDivided() && objects.size() != 0) {
+	if (isDivided() && objects.size() == 0) {
 		for (int i = 0; i < CHILD_NUMBER; ++i)
 			childNodes[i]->addBounds(boundsVector);
 	} else {
