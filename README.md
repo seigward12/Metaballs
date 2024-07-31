@@ -8,6 +8,12 @@ using :
 - TGUI for widgets
 
 
+![normal](include/normal.png)
+![normal](include/query.png)
+![normal](include/quadtree.png)
+![normal](include/metaballs.png)
+
+
 ### to install dependencies on linux:
 $sudo apt update
 
