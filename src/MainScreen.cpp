@@ -236,11 +236,14 @@ void MainScreen::update(const sf::Time& dt) {
 		moveObjects(dt);
 	} else if (selectedParticle != nullptr) {
 		selectedParticle->setPosition(mousePosition);
-		quadTree->update(selectedParticle);
+		// quadTree->update(selectedParticle);
 	}
 
-	for (auto& particle : particles)
+	quadTree->clear();
+	for (auto& particle : particles) {
 		particle->setColor(DEFAULT_COLOR);
+		quadTree->insert(particle.get());
+	}
 
 	for (auto& particle : particles) {
 		std::unordered_set<Particle*> collisions =
@@ -252,8 +255,8 @@ void MainScreen::update(const sf::Time& dt) {
 
 			if (collisionEnabled && !isPaused) {
 				if (particle->collideWithParticle(*myCollision)) {
-					quadTree->update(particle.get());
-					quadTree->update(myCollision);
+					// quadTree->update(particle.get());
+					// quadTree->update(myCollision);
 				}
 			} else {
 				if (particle->isColliding(*myCollision)) {
@@ -284,10 +287,10 @@ void MainScreen::update(const sf::Time& dt) {
 		const auto scaleBounds =
 			[](const sf::FloatRect& bounds) -> sf::FloatRect {
 			sf::FloatRect trasformedBounds(bounds);
-			trasformedBounds.top -= bounds.height / 2.f;
-			trasformedBounds.left -= bounds.width / 2.f;
-			trasformedBounds.width *= 2.f;
-			trasformedBounds.height *= 2.f;
+			trasformedBounds.top -= bounds.height;
+			trasformedBounds.left -= bounds.width;
+			trasformedBounds.width *= 3.f;
+			trasformedBounds.height *= 3.f;
 			return trasformedBounds;
 		};
 
@@ -374,14 +377,14 @@ void MainScreen::draw(sf::RenderTarget& target) {
 void MainScreen::moveObjects(const sf::Time& dt) {
 	for (auto& particle : particles) {
 		particle->update(dt, boundary);
-		quadTree->update(particle.get());
+		// quadTree->update(particle.get());
 	}
 }
 
 void MainScreen::initializeObjects(int objectNumber) {
 	if (objectNumber < 0)
 		objectNumber = particles.size();
-	quadTree->clear();
+	// quadTree->clear();
 	particles.clear();
 	for (unsigned short i = 0; i < objectNumber; i++) {
 		addParticle(sf::Vector2f((rand() % (int)boundary.width),
@@ -405,7 +408,7 @@ void MainScreen::addParticle(const sf::Vector2f& position) {
 		(radius / 2) + rand() % static_cast<int>(radius)));
 	particles.back()->setPosition(position);
 	particles.back()->setVelocity(getRandomVelocity(particleSpeed));
-	quadTree->insert(particles.back().get());
+	// quadTree->insert(particles.back().get());
 }
 
 void MainScreen::selectParticle() {
@@ -427,7 +430,7 @@ void MainScreen::selectParticle() {
 			selectedParticle->setVelocity(sf::Vector2f(0, 0));
 			selectedParticle->setPosition(mousePosition);
 			selectedParticle->setInfiniteMass(true);
-			quadTree->update(selectedParticle);
+			// quadTree->update(selectedParticle);
 		}
 	}
 }
